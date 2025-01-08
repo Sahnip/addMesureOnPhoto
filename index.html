@@ -40,11 +40,18 @@
             </div>
         </div>
         <div class="tool">
-            <button id="takePicture"><i class="fa-solid fa-plus"></i> Prendre une photo</button>
+            <button id="takePicture"><i class="fa-solid fa-plus"></i> Nouvelle superficie</button>
         </div>
 
+        <!--<button id="start-camera">Start Camera</button>
+        <button id="click-photo">Click Photo</button>-->
+
+        <video id="video" width="320" height="240" class="camera-hidden" autoplay></video>
+        <canvas id="canvas" width="320" height="240" class="camera-hidden"></canvas>
+        <button id="close-camera-button" class="camera-hidden">X</button>
+        <button id="close-canvas-button" class="camera-hidden">X</button>
 
     </div>
-    <script src="index.js"></script>
+    <script src="index.js" type="module"></script>
 </body>
 </html>
