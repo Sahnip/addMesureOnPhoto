@@ -6,6 +6,21 @@
     <link href="index.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>DiagArea</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        
+        // Rendez Firebase disponible globalement
+        window.initializeApp = initializeApp;
+        window.getDatabase = getDatabase;
+        window.ref = ref;
+        window.onValue = onValue;
+        window.set = set;
+        window.get = get;
+        window.child = child;
+        window.update = update;
+        window.remove = remove;
+      </script>
 </head>
 
 <body>
@@ -18,7 +33,7 @@
         <h1>Mesures précédentes</h1>
         <div class="previous-diag">
             <div class="card">
-                <img src="photo-sampled.jpg">
+                <img src="photo-sampled.jpg" data-iddiag="">
             </div>
             <div class="card">
                 <img src="photo-sampled.jpg">

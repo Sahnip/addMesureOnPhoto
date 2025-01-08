@@ -1,7 +1,106 @@
 import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
 
+const previousDiag = document.getElementById('previous-diag')
+// import { initializeApp } from './node_modules/firebase/app';
+// import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
 
+const firebaseConfig = {
+    apiKey: "AIzaSyBghv1dDk0BBu1FaT6dFdEIu6VLD6Df9gI",
+    authDomain: "diagarea.firebaseapp.com",
+    databaseURL: "https://diagarea-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "diagarea",
+    storageBucket: "diagarea.firebasestorage.app",
+    messagingSenderId: "663558652099",
+    appId: "1:663558652099:web:f4d97483d30d7567832276"
+  };
+  
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app)
+
+const dbRef = ref(db);
+
+const userId = uuidv4(); 
+
+function getSnapshot(){
+    get(child(dbRef, `users`)).then((snapshot) => {
+        if (snapshot.exists()) {
+          console.log(snapshot.val());
+        } else {
+          console.log("No data available");
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
+}
+getSnapshot()
+
+function addFirebase(userId, name, email, imageUrl) {
+    const db = getDatabase();
+    set(ref(db, 'users/' + userId), {
+      username: name,
+      email: email,
+      profile_picture : imageUrl
+    });
+    console.log("Un nouveau diag est ajouté")
+}
+
+function removeFirebase(userId){
+    const db = getDatabase();
+    remove(ref(db, 'users/' + userId))
+    console.log("Un diag est supprimé")
+}
+
+const nameTest = "S4h"
+const mailTest = "test@test.com"
+const imageU = "https://assets-news.housing.com/news/wp-content/uploads/2022/03/31010142/Luxury-house-design-Top-10-tips-to-add-luxury-to-your-house-FEATURE-compressed.jpg"
+//addFirebase(userId, nameTest, mailTest, imageU)
+
+//const distanceRef = ref(db, "users/" + userId + '/distance');
+const distanceRef = ref(db, "users/02e5e815-fb1b-4155-8c64-d85157511707");
+onValue(distanceRef, (snapchot) => {
+    const data = snapchot.val()
+    console.log(data)
+    //updateDistance(postElement, data)
+})
+
+
+// const commentsRef = ref(db, 'post-comments/' + userId)
+// onValue(commentsRef, (snapchot) =>{
+//     snapshotEqual.forEach((childSnapshot) =>{
+//         const childKey = childSnapshot.apiKey
+//         const childData = childSnapshot.val()
+//     })
+// }, {
+//     onlyOnce: true
+// })
+
+
+
+
+// Obtenir image unsplash API
+
+async function getUnsplashImage(){
+    try{
+        const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+        if(!res.ok){
+            throw Error("L'api unsplash ne fonctionne")
+        }
+        const data = await res.json()
+        console.log(data.urls.regular)
+    }catch(err){
+        console.log(err)
+    }
+    
+}
+
+
+
+
+
+
+// Partie Pour prendre photo
 
 const takePicture = document.getElementById('takePicture');
 
@@ -33,6 +132,8 @@ const newMeasur = {
     "mesure" : 43,
 }
 
+
+// Function bouton fermeture camera ouverte
 closeCameraBtn.addEventListener('click', function(){
         video2.classList.add('camera-hidden')
         closeCameraBtn.classList.add('camera-hidden')
@@ -44,6 +145,7 @@ closeCameraBtn.addEventListener('click', function(){
 })
 
 
+// Function bouton fermeture Canvas ouverte
 closeCanvasBtn.addEventListener('click', function(){
         closeCanvasBtn.classList.remove('btn-tools-camera')
         closeCanvasBtn.classList.add('camera-hidden') // Retirer hidden quand fullscreen
@@ -52,8 +154,11 @@ closeCanvasBtn.addEventListener('click', function(){
 })
 
 
+
+
+// Function Prendre Photo bouton
 takePicture.addEventListener('click', function(){
-    console.log(ne)
+    getUnsplashImage()
     if (!stream) {
         // Ouvrir la caméra
         navigator.mediaDevices.getUserMedia(constraints)
