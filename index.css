@@ -61,7 +61,7 @@ h1{
     bottom: 20px;
 }
 
-#takePicture{
+.takePicture{
     position:relative;
     padding: 17px 25px;
     background-color: #343fb5;

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
 
-const previousDiag = document.getElementById('previous-diag')
+const previousDiag = document.querySelector('.previous-diag')
 // import { initializeApp } from './node_modules/firebase/app';
 // import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
 
@@ -22,6 +22,10 @@ const db = getDatabase(app)
 const dbRef = ref(db);
 
 const userId = uuidv4(); 
+const nameTest = `S4h${userId}`
+const mailTest = `test${userId}@test.com`
+//const imgTest = getUnsplashImage()
+
 
 function getSnapshot(){
     get(child(dbRef, `users`)).then((snapshot) => {
@@ -46,24 +50,19 @@ function addFirebase(userId, name, email, imageUrl) {
     console.log("Un nouveau diag est ajouté")
 }
 
+
 function removeFirebase(userId){
     const db = getDatabase();
     remove(ref(db, 'users/' + userId))
     console.log("Un diag est supprimé")
 }
 
-const nameTest = "S4h"
-const mailTest = "test@test.com"
-const imageU = "https://assets-news.housing.com/news/wp-content/uploads/2022/03/31010142/Luxury-house-design-Top-10-tips-to-add-luxury-to-your-house-FEATURE-compressed.jpg"
-//addFirebase(userId, nameTest, mailTest, imageU)
 
-//const distanceRef = ref(db, "users/" + userId + '/distance');
-const distanceRef = ref(db, "users/02e5e815-fb1b-4155-8c64-d85157511707");
-onValue(distanceRef, (snapchot) => {
-    const data = snapchot.val()
-    console.log(data)
-    //updateDistance(postElement, data)
-})
+
+
+
+//const distanceRef = ref(db, "users/" + userId + '/distance'); 02e5e815-fb1b-4155-8c64-d85157511707
+
 
 
 // const commentsRef = ref(db, 'post-comments/' + userId)
@@ -77,23 +76,6 @@ onValue(distanceRef, (snapchot) => {
 // })
 
 
-
-
-// Obtenir image unsplash API
-
-async function getUnsplashImage(){
-    try{
-        const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
-        if(!res.ok){
-            throw Error("L'api unsplash ne fonctionne")
-        }
-        const data = await res.json()
-        console.log(data.urls.regular)
-    }catch(err){
-        console.log(err)
-    }
-    
-}
 
 
 
@@ -114,11 +96,7 @@ const closeCanvasBtn = document.getElementById('close-canvas-button')
 
 
 let stream = null; // Variable pour stocker le stream
-
-// const video = document.createElement('video');
-// document.body.appendChild(video);
-
-
+console.log(stream)
 const constraints = {
     video: {
         facingMode: 'environment'
@@ -126,31 +104,31 @@ const constraints = {
     audio: false
 };
 
-const newMeasur = {
-    "id" : uuidv4(),
-    "picture" : "canvas",
-    "mesure" : 43,
-}
+// const newMeasur = {
+//     "id" : uuidv4(),
+//     "picture" : "canvas",
+//     "mesure" : 43,
+// }
 
 
 // Function bouton fermeture camera ouverte
 closeCameraBtn.addEventListener('click', function(){
-        video2.classList.add('camera-hidden')
-        closeCameraBtn.classList.add('camera-hidden')
-        stream.getTracks().forEach(track => track.stop());
-        video2.srcObject = null;
-        stream = null;
-        video2.style.display = 'none'
-        takePicture.innerHTML = `<i class="fa-solid fa-plus"></i> Prendre une photo`;
+    video2.classList.add('camera-hidden')
+    closeCameraBtn.classList.add('camera-hidden')
+    stream.getTracks().forEach(track => track.stop());
+    video2.srcObject = null;
+    stream = null;
+    video2.style.display = 'none'
+    takePicture.innerHTML = `<i class="fa-solid fa-plus"></i> Prendre une photo`;
 })
 
 
 // Function bouton fermeture Canvas ouverte
 closeCanvasBtn.addEventListener('click', function(){
-        closeCanvasBtn.classList.remove('btn-tools-camera')
-        closeCanvasBtn.classList.add('camera-hidden') // Retirer hidden quand fullscreen
-        canvas.classList.remove('camera-fullscreen')
-        canvas.classList.add('camera-hidden') // Retirer hidden quand fullscreen
+    closeCanvasBtn.classList.remove('btn-tools-camera')
+    closeCanvasBtn.classList.add('camera-hidden') // Retirer hidden quand fullscreen
+    canvas.classList.remove('camera-fullscreen')
+    canvas.classList.add('camera-hidden') // Retirer hidden quand fullscreen
 })
 
 
@@ -158,25 +136,25 @@ closeCanvasBtn.addEventListener('click', function(){
 
 // Function Prendre Photo bouton
 takePicture.addEventListener('click', function(){
-    getUnsplashImage()
+    //getUnsplashImage()
     if (!stream) {
         // Ouvrir la caméra
         navigator.mediaDevices.getUserMedia(constraints)
-            .then((videoStream) => {
-                stream = videoStream; // Sauvegarder la référence du stream
-                video2.srcObject = stream;
-                video2.classList.remove('camera-hidden')
-                video2.classList.add('camera-fullscreen')
-                video2.play();
-                closeCameraBtn.classList.remove('camera-hidden') // Retirer hidden quand fullscreen
-                closeCameraBtn.classList.add('btn-tools-camera')
-                closeCameraBtn.style.cursor = "pointer"
-                takePicture.textContent = 'Prendre une photo';
-                // takePicture.style.cursor = "pointer"
-            })
-            .catch((error) => {
-                console.error("Erreur d'accès à la caméra:", error);
-            });
+        .then((videoStream) => {
+            stream = videoStream; // Sauvegarder la référence du stream
+            video2.srcObject = stream;
+            video2.classList.remove('camera-hidden')
+            video2.classList.add('camera-fullscreen')
+            video2.play();
+            closeCameraBtn.classList.remove('camera-hidden') // Retirer hidden quand fullscreen
+            closeCameraBtn.classList.add('btn-tools-camera')
+            closeCameraBtn.style.cursor = "pointer"
+            takePicture.textContent = 'Prendre une photo';
+            // takePicture.style.cursor = "pointer"
+        })
+        .catch((error) => {
+            console.error("Erreur d'accès à la caméra:", error);
+        });
     } else {
         // Fermer la caméra
         closeCanvasBtn.classList.remove('btn-tools-camera')
@@ -202,3 +180,74 @@ takePicture.addEventListener('click', function(){
         console.log(image_data_url);
     }
 });
+
+
+
+// Obtenir image unsplash API
+
+let newPic = ''
+
+// async function getUnsplashImage(){
+//     try{
+//         const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+//         if(!res.ok){
+//             throw Error("L'api unsplash ne fonctionne")
+//         }
+//         const data = await res.json()
+//         console.log(data.urls.regular)
+//         newPic = data.urls.regular
+//         return data.urls.regular
+//     }catch(err){
+//         console.log(err)
+//     }
+    
+// }
+// getUnsplashImage()
+
+try{
+    const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+        if(!res.ok){
+            throw Error("L'api unsplash ne fonctionne")
+        }
+        const data = await res.json()
+        console.log(data.urls.regular)
+        newPic = data.urls.regular
+        return data.urls.regular
+    }catch(err){
+        console.log(err)
+}
+
+console.log(newPic)
+
+
+// Affichage des derniers diags depuis Firebase
+
+let cardHTML = ``
+let intVal = []
+function render(){
+    const distanceRef = ref(db, "users/");
+    onValue(distanceRef, (snapshot) => {
+        // const data = snapshot.val()
+        // console.log(data)
+        snapshot.forEach((child) => {
+            const dataKey = child.key
+            const data = child.val()
+            console.log(data.profile_picture); 
+            intVal.push(child.val());
+            previousDiag.innerHTML +=`<div class="card">
+                                          <img src="${data.profile_picture}" data-iddiag="${dataKey}">
+                                      </div>
+            `
+        //console.log("intVal" + intVal);
+        })
+    })
+}
+
+render()
+
+
+const addData = document.getElementById("addData")
+addData.addEventListener('click', function(){
+    addFirebase(userId, nameTest, mailTest, imgTest)
+})
+// addFirebase(userId, nameTest, mailTest, imgTest)
