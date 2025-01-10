@@ -1,10 +1,13 @@
 import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
+const getPhoto = document.getElementById('get-photo')
 
 const previousDiag = document.querySelector('.previous-diag')
 // import { initializeApp } from './node_modules/firebase/app';
 // import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
 
+
+e.target.files[0]
 const firebaseConfig = {
     apiKey: "AIzaSyBghv1dDk0BBu1FaT6dFdEIu6VLD6Df9gI",
     authDomain: "diagarea.firebaseapp.com",
@@ -134,6 +137,10 @@ closeCanvasBtn.addEventListener('click', function(){
 
 
 
+
+
+
+
 // Function Prendre Photo bouton
 takePicture.addEventListener('click', function(){
     //getUnsplashImage()
@@ -212,7 +219,7 @@ try{
         const data = await res.json()
         console.log(data.urls.regular)
         newPic = data.urls.regular
-        return data.urls.regular
+        return newPic
     }catch(err){
         console.log(err)
 }
@@ -243,11 +250,28 @@ function render(){
     })
 }
 
-render()
 
+render()
+ getPhoto.addEventListener('change', function(event) {
+    // Récupérer les fichiers sélectionnés
+    
+    const files = event.target.files;
+    
+    // Vérifier s'il y a des fichiers sélectionnés
+    if (files.length > 0) {
+        // Récupérer le premier fichier
+        const file = files[0];
+        console.log('Nom du fichier:', file.name);
+        console.log('Type du fichier:', file.type);
+        console.log('Taille du fichier:', file.size);
+    } else {
+        console.log('Aucun fichier sélectionné');
+    }
+});
 
 const addData = document.getElementById("addData")
 addData.addEventListener('click', function(){
-    addFirebase(userId, nameTest, mailTest, imgTest)
+    addFirebase(userId, nameTest, mailTest, newPic)
+   
 })
-// addFirebase(userId, nameTest, mailTest, imgTest)
+// addFirebase(userId, nameTest, mailTest, newPic)
