@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
-const getPhoto = document.getElementById('get-photo')
+const getPhoto = document.getElementById('get-photo').files[0]
 
 const previousDiag = document.querySelector('.previous-diag')
 // import { initializeApp } from './node_modules/firebase/app';
