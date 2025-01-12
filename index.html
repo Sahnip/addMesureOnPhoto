@@ -42,7 +42,9 @@
 
         <!--<button id="start-camera">Start Camera</button>
         <button id="click-photo">Click Photo</button>-->
-        <input id="get-photo" type="file" accept="image/*, application/pdf" capture="environment" />
+        <!--<input id="get-photo" type="file" accept="image/*, application/pdf" capture="environment" />-->
+        <input id="get-photo" type="file" accept="image/*, application/pdf" />
+        <input type="file" (change)="getFile($event)" />
         <video id="video" width="320" height="240" class="camera-hidden" autoplay></video>
         <canvas id="canvas" width="320" height="240" class="camera-hidden"></canvas>
         <button id="close-camera-button" class="camera-hidden">X</button>
