@@ -59,6 +59,7 @@ h1{
     justify-content: center;
     align-self: center;
     bottom: 20px;
+    gap: 20px;
 }
 
 .takePicture{
@@ -69,6 +70,18 @@ h1{
     border-radius: 30px;
     cursor: pointer;
     color: #e7e9ff;
+    box-shadow: 0px 3px 3px #8d8d8d;
+    z-index: 1001;
+}
+
+.btnCanvas{
+    position:relative;
+    padding: 17px 25px;
+    background-color: #ffffff;
+    border: solid 1px rgb(0, 0, 0);
+    border-radius: 30px;
+    cursor: pointer;
+    color: #000000;
     box-shadow: 0px 3px 3px #8d8d8d;
     z-index: 1001;
 }
@@ -101,3 +114,24 @@ h1{
     right: 10px;
     z-index: 1001;
   }
+
+
+  .canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh; 
+    border: 20px solid black;
+    box-sizing: border-box; /* Inclure la bordure dans les dimensions */
+    z-index: 900;
+}
+
+
+.visible{
+    display: block;
+}
+
+.hidden{
+    display: none;
+}

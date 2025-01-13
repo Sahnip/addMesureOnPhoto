@@ -1,13 +1,22 @@
 import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
-const getPhoto = document.getElementById('get-photo').files[0]
+const fileInput = document.getElementById("get-photo");  // use input file id here
+const textinput = document.getElementById("takePicture"); //Change the browser title
+const canvas = document.querySelector("#canvas");
+
+let btnEnregistrer = ""
+let btnAnnuler = ""
+
+const addBtn = document.getElementById('add-btn')
+
+//const getPhoto = document.getElementById('get-photo').files[0]
 
 const previousDiag = document.querySelector('.previous-diag')
 // import { initializeApp } from './node_modules/firebase/app';
 // import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
 
 
-e.target.files[0]
+//e.target.files[0]
 const firebaseConfig = {
     apiKey: "AIzaSyBghv1dDk0BBu1FaT6dFdEIu6VLD6Df9gI",
     authDomain: "diagarea.firebaseapp.com",
@@ -90,7 +99,7 @@ function removeFirebase(userId){
 const takePicture = document.getElementById('takePicture');
 
 let video2 = document.querySelector("#video");
-let canvas = document.querySelector("#canvas");
+//let canvas = document.querySelector("#canvas");
 // let camera_button = document.querySelector("#start-camera");
 // let click_button = document.querySelector("#click-photo");
 
@@ -99,7 +108,7 @@ const closeCanvasBtn = document.getElementById('close-canvas-button')
 
 
 let stream = null; // Variable pour stocker le stream
-console.log(stream)
+
 const constraints = {
     video: {
         facingMode: 'environment'
@@ -141,7 +150,258 @@ closeCanvasBtn.addEventListener('click', function(){
 
 
 
-// Function Prendre Photo bouton
+
+
+
+
+// Obtenir image unsplash API
+
+let newPic = ''
+
+async function getUnsplashImage(){
+    try{
+        const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+        if(!res.ok){
+            throw Error("L'api unsplash ne fonctionne")
+        }
+        const data = await res.json()
+        console.log(data.urls.regular)
+        newPic = data.urls.regular
+        return data.urls.regular
+    }catch(err){
+        console.log(err)
+    }
+    
+}
+
+
+// try{
+//     const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+//         if(!res.ok){
+//             throw Error("L'api unsplash ne fonctionne")
+//         }
+//         const data = await res.json()
+//         console.log(data.urls.regular)
+//         newPic = data.urls.regular
+//         //return newPic
+//     }catch(err){
+//         console.log(err)
+// }
+
+
+
+
+// Affichage des derniers diags depuis Firebase
+
+let cardHTML = ``
+let intVal = []
+function render(){
+    const distanceRef = ref(db, "users/");
+    onValue(distanceRef, (snapshot) => {
+        // const data = snapshot.val()
+        // console.log(data)
+        snapshot.forEach((child) => {
+            const dataKey = child.key
+            const data = child.val()
+            //console.log(data.profile_picture); 
+            intVal.push(child.val());
+            previousDiag.innerHTML +=`<div class="card">
+                                          <img src="${data.profile_picture}" data-iddiag="${dataKey}">
+                                      </div>
+            `
+        //console.log("intVal" + intVal);
+        })
+    })
+}
+
+
+
+
+
+            
+            
+function createBtnEnregistrer(){
+    btnEnregistrer = document.createElement('button')
+    btnEnregistrer.classList.add('tool')
+    btnEnregistrer.classList.add('btnCanvas')
+    btnEnregistrer.textContent = "Enregistrer"
+    document.body.appendChild(btnEnregistrer)
+    btnEnregistrer.style.zIndex = "1000"
+}
+
+function createBtnAnnuler(){
+    btnAnnuler = document.createElement('button')
+    btnAnnuler.classList.add('tool')
+    btnAnnuler.classList.add('btnCanvas')
+    btnAnnuler.textContent = "Annuler"
+    document.body.appendChild(btnAnnuler)
+    btnAnnuler.style.zIndex = "1000"
+}
+
+function createBtnCanvas(){
+    createBtnEnregistrer()
+    createBtnAnnuler()
+}
+
+function removeBtnCanvas(){
+    document.body.removeChild(btnEnregistrer)
+    document.body.removeChild(btnAnnuler)
+}
+
+
+addBtn.addEventListener('click', function(){
+    CreateBtnCanvas()
+})
+
+
+let image_data_url = ""
+fileInput.addEventListener('change', function(event){
+    handleChange()
+    const files = event.target.files;
+    // Vérifier s'il y a des fichiers sélectionnés
+    if (files.length > 0) {
+        canvas.classList.remove('hidden')
+        addFileCanvas(files[0], canvas);
+        image_data_url = addFileCanvas(files[0], canvas)
+        createBtnCanvas()
+        btnEnregistrer.addEventListener('click', function(){
+            addFirebase(userId, nameTest, mailTest, image_data_url)
+            image_data_url=""
+            canvas.classList.add('hidden')
+            removeBtnCanvas()
+            textinput.value = "+ Nouvelle superficie"
+            window.location.reload()
+        })
+        
+        btnAnnuler.addEventListener('click', function(){
+            image_data_url=""
+            canvas.classList.add('hidden')
+            removeBtnCanvas()
+            textinput.value = "+ Nouvelle superficie"
+            //window.location.reload()
+        })
+    } else {
+        console.log('Aucun fichier sélectionné');
+    }
+});
+
+
+
+
+function addFileCanvas(file, canvas) {
+    const ctx = canvas.getContext('2d');
+    const reader = new FileReader();
+    reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            image_data_url = canvas.toDataURL('image/jpeg');
+            console.log(image_data_url)
+        };
+        img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    return image_data_url
+}
+
+
+
+
+
+ // canvas.addEventListener('change', function(){
+    //     addFirebase(userId, nameTest, mailTest, image_data_url)
+    //     image_data_url=""
+    //     canvas.classList.add('camera-hidden')
+    //     window.location.reload()
+    // })
+
+    // btnEnregistrer.addEventListener('click', function(){
+    //     addFirebase(userId, nameTest, mailTest, image_data_url)
+    //     image_data_url=""
+    //     canvas.classList.add('camera-hidden')
+    //     window.location.reload()
+    // })
+
+
+
+
+
+// GÉRER LE CLIC ADD SUPERFICIEL ET LE CHANGEMENT D'ÉTAT DE INPUT FILE
+
+textinput.addEventListener('click', browseClick);
+
+function browseClick() {
+    fileInput.click();
+}
+// GÉRER LE CHANGEMENT DE L'ÉTAT DE INPUT FILE
+function handleChange() {
+    textinput.value = fileInput.value; //Value of input type button equal to value of input type file  
+}
+
+
+
+render()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+// ANCIEN FILE INPUT EVENT LISTENER DANS INDEX.HTML
+
+// Récupérer le premier fichier
+                const file = files[0];
+                console.log(file)
+                canvas.getContext('2d')//.drawImage(imageS, 0, 0, canvas.width, canvas.height);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = new Image();
+                    //img.src = event.target.result;
+                    //console.log(reader.result)
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        //ctx.drawImage(img, 0, 0, img.width, img.height);
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        console.log(ctx)
+                        image_data_url = canvas.toDataURL('image/jpeg');
+                        console.log(image_data_url)
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+                //console.log(reader)
+
+
+
+
+
+
+
+
+
+
+// Function Prendre Photo bouton, avec stream caméra (OLD VERSION)
+
+
 takePicture.addEventListener('click', function(){
     //getUnsplashImage()
     if (!stream) {
@@ -190,88 +450,25 @@ takePicture.addEventListener('click', function(){
 
 
 
-// Obtenir image unsplash API
-
-let newPic = ''
-
-// async function getUnsplashImage(){
-//     try{
-//         const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
-//         if(!res.ok){
-//             throw Error("L'api unsplash ne fonctionne")
-//         }
-//         const data = await res.json()
-//         console.log(data.urls.regular)
-//         newPic = data.urls.regular
-//         return data.urls.regular
-//     }catch(err){
-//         console.log(err)
-//     }
-    
-// }
-// getUnsplashImage()
-
-try{
-    const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
-        if(!res.ok){
-            throw Error("L'api unsplash ne fonctionne")
-        }
-        const data = await res.json()
-        console.log(data.urls.regular)
-        newPic = data.urls.regular
-        return newPic
-    }catch(err){
-        console.log(err)
-}
-
-console.log(newPic)
 
 
-// Affichage des derniers diags depuis Firebase
-
-let cardHTML = ``
-let intVal = []
-function render(){
-    const distanceRef = ref(db, "users/");
-    onValue(distanceRef, (snapshot) => {
-        // const data = snapshot.val()
-        // console.log(data)
-        snapshot.forEach((child) => {
-            const dataKey = child.key
-            const data = child.val()
-            console.log(data.profile_picture); 
-            intVal.push(child.val());
-            previousDiag.innerHTML +=`<div class="card">
-                                          <img src="${data.profile_picture}" data-iddiag="${dataKey}">
-                                      </div>
-            `
-        //console.log("intVal" + intVal);
-        })
-    })
-}
 
 
-render()
- getPhoto.addEventListener('change', function(event) {
-    // Récupérer les fichiers sélectionnés
-    
-    const files = event.target.files;
-    
-    // Vérifier s'il y a des fichiers sélectionnés
-    if (files.length > 0) {
-        // Récupérer le premier fichier
-        const file = files[0];
-        console.log('Nom du fichier:', file.name);
-        console.log('Type du fichier:', file.type);
-        console.log('Taille du fichier:', file.size);
-    } else {
-        console.log('Aucun fichier sélectionné');
-    }
-});
 
-const addData = document.getElementById("addData")
-addData.addEventListener('click', function(){
-    addFirebase(userId, nameTest, mailTest, newPic)
-   
-})
+
+
+
+
+
+
+
+
+// const addData = document.getElementById("addData")
+// addData.addEventListener('click', function(){
+//     addFirebase(userId, nameTest, mailTest, newPic)
+
+// })
 // addFirebase(userId, nameTest, mailTest, newPic)
+
+
+*/

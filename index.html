@@ -35,12 +35,6 @@
             <div class="card">
                 <img src="photo-sampled.jpg">
             </div>
-            <div class="card">
-                <img src="photo-sampled.jpg">
-            </div>
-            <div class="card">
-                <img src="photo-sampled.jpg">
-            </div>
             
         </div>
         <div class="tool">
@@ -48,31 +42,22 @@
             <input class="takePicture" id="get-photo" type="file" accept="image/*, application/pdf" style="visibility:hidden;" name="Nouvelle superficie" />
             <button class="takePicture" id="takePicture"><i class="fa-solid fa-plus"></i> Nouvelle superficie</button>
             -->
-            <input type="file" id="get-photo" name="fileupload" style="display: none" onChange="handlechange();"/>
-            <input class="takePicture" type="button" value="+ Nouvelle superficie" id="takePicture" onclick="browseclick();"/>
+            <input type="file" id="get-photo" name="fileupload" style="display: none"/>
+            <input class="takePicture" id="takePicture" type="button" value="+ Nouvelle superficie" />
+            <input class="takePicture" id="add-btn" type="button" value="+ Nouveau Btn" />
         </div>
 
         <!--<button id="start-camera">Start Camera</button>
         <button id="click-photo">Click Photo</button>-->
         <video id="video" width="320" height="240" class="camera-hidden" autoplay></video>
-        <canvas id="canvas" width="320" height="240" class="camera-hidden"></canvas>
+        <canvas id="canvas" width="320" height="240" class="canvas hidden"></canvas>
         <button id="close-camera-button" class="camera-hidden">X</button>
         <button id="close-canvas-button" class="camera-hidden">X</button>
 
         
     </div>
 
-    <script>
-        function browseclick(){
-            var fileinput = document.getElementById("browse");  // use input file id here
-            fileinput.click(); 
-        }
-        function handlechange(){
-            var fileinput = document.getElementById("browse"); 
-            var textinput = document.getElementById("takePicture"); //Change the browser title
-            textinput.value = fileinput.value; //Value of input type button equal to value of input type file  
-        }
-    </script>
+
     <script src="index.js" type="module"></script>
 </body>
 </html>
@@ -81,3 +66,7 @@
 
 <!--<input id="get-photo" type="file" accept="image/*, application/pdf" capture="environment" />
 <input type="file" (change)="getFile($event)" />-->
+
+
+
+
