@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
 const textinput = document.getElementById("takePicture"); //Change the browser title
