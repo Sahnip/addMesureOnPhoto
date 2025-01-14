@@ -55,6 +55,7 @@ h1{
 }
 
 .tool{
+    display: flex;
     position: fixed;
     justify-content: center;
     align-self: center;
@@ -63,7 +64,7 @@ h1{
 }
 
 .takePicture{
-    position:relative;
+    bottom: 20px;
     padding: 17px 25px;
     background-color: #110f62;
     border: solid 1px rgb(5, 9, 46);
@@ -75,7 +76,6 @@ h1{
 }
 
 .btnCanvas{
-    position:relative;
     padding: 17px 25px;
     background-color: #ffffff;
     border: solid 1px rgb(0, 0, 0);

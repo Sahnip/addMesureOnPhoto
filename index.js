@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+//import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
 const textinput = document.getElementById("takePicture"); //Change the browser title
@@ -7,7 +7,8 @@ const canvas = document.querySelector("#canvas");
 let btnEnregistrer = ""
 let btnAnnuler = ""
 
-const addBtn = document.getElementById('add-btn')
+let newPic = ''
+
 
 //const getPhoto = document.getElementById('get-photo').files[0]
 
@@ -31,18 +32,38 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app)
 
-const dbRef = ref(db);
+const dbRef = ref(db, 'diagsImage');
 
-const userId = uuidv4(); 
+
+let userId = 0; 
 const nameTest = `S4h${userId}`
 const mailTest = `test${userId}@test.com`
-//const imgTest = getUnsplashImage()
+const imgTest = 'getUnsplashImage()'
 
+addFirebase(userId, nameTest, mailTest, imgTest)
+
+
+// push((dbRef),{
+//     username: 'Sah',
+//     email: "mailTest@TextDecoderStream.fr",
+//     profile_picture : imgTest
+//   })
+
+let idImage = 1
+function newId(){
+    idImage++
+    return idImage
+}
 
 function getSnapshot(){
-    get(child(dbRef, `users`)).then((snapshot) => {
+    get(child(dbRef)).then((snapshot) => {
         if (snapshot.exists()) {
           console.log(snapshot.val());
+          userId = snapshot[0]
+          console.log(snapshot[0])
+          if(snapshot.userId === userId){
+            userId = newId()
+        }
         } else {
           console.log("No data available");
         }
@@ -53,8 +74,8 @@ function getSnapshot(){
 getSnapshot()
 
 function addFirebase(userId, name, email, imageUrl) {
-    const db = getDatabase();
-    set(ref(db, 'users/' + userId), {
+    push(ref(db, `diagsImage/image${userId}`) , {
+      userId: userId,
       username: name,
       email: email,
       profile_picture : imageUrl
@@ -64,16 +85,15 @@ function addFirebase(userId, name, email, imageUrl) {
 
 
 function removeFirebase(userId){
-    const db = getDatabase();
-    remove(ref(db, 'users/' + userId))
+    remove(ref(db, `diagsImage/image${userId}`))
     console.log("Un diag est supprimé")
 }
+//removeFirebase(0)
 
 
 
 
-
-//const distanceRef = ref(db, "users/" + userId + '/distance'); 02e5e815-fb1b-4155-8c64-d85157511707
+//const distanceRef = ref(db, "diagsImage/" + userId + '/distance'); 02e5e815-fb1b-4155-8c64-d85157511707
 
 
 
@@ -156,23 +176,22 @@ closeCanvasBtn.addEventListener('click', function(){
 
 // Obtenir image unsplash API
 
-let newPic = ''
 
-async function getUnsplashImage(){
-    try{
-        const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
-        if(!res.ok){
-            throw Error("L'api unsplash ne fonctionne")
-        }
-        const data = await res.json()
-        console.log(data.urls.regular)
-        newPic = data.urls.regular
-        return data.urls.regular
-    }catch(err){
-        console.log(err)
-    }
+// async function getUnsplashImage(){
+//     try{
+//         const res = await fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=luxe+house")
+//         if(!res.ok){
+//             throw Error("L'api unsplash ne fonctionne")
+//         }
+//         const data = await res.json()
+//         console.log(data.urls.regular)
+//         newPic = data.urls.regular
+//         return data.urls.regular
+//     }catch(err){
+//         console.log(err)
+//     }
     
-}
+// }
 
 
 // try{
@@ -196,7 +215,7 @@ async function getUnsplashImage(){
 let cardHTML = ``
 let intVal = []
 function render(){
-    const distanceRef = ref(db, "users/");
+    const distanceRef = ref(db, "diagsImage/");
     onValue(distanceRef, (snapshot) => {
         // const data = snapshot.val()
         // console.log(data)
@@ -248,10 +267,6 @@ function removeBtnCanvas(){
     document.body.removeChild(btnAnnuler)
 }
 
-
-addBtn.addEventListener('click', function(){
-    CreateBtnCanvas()
-})
 
 
 let image_data_url = ""

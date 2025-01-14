@@ -8,7 +8,7 @@
     <title>DiagArea</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, push, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         
         // Rendez Firebase disponible globalement
         window.initializeApp = initializeApp;
@@ -16,6 +16,7 @@
         window.ref = ref;
         window.onValue = onValue;
         window.set = set;
+        window.push = push;
         window.get = get;
         window.child = child;
         window.update = update;
@@ -44,7 +45,6 @@
             -->
             <input type="file" id="get-photo" accept="image/*, application/pdf" name="fileupload" style="display: none"/>
             <input class="takePicture" id="takePicture" type="button" value="+ Nouvelle superficie" />
-            <input class="takePicture" id="add-btn" type="button" value="+ Nouveau Btn" />
         </div>
 
         <!--<button id="start-camera">Start Camera</button>
