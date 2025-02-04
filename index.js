@@ -359,7 +359,7 @@ function handleChange() {
 
 
 render()
-
+console.log('tu vas réussir')
 
 
 
