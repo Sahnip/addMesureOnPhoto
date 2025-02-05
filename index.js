@@ -1,5 +1,5 @@
-import { initializeApp } from './node_modules/firebase/app';
-import { getDatabase, ref, onValue, set, push, get, child, update, remove } from "./node_modules/firebase/database";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.3/firebase-app.js';
+import { getDatabase, ref, onValue, set, push, get, child, update, remove } from 'https://www.gstatic.com/firebasejs/9.6.3/firebase-database.js';
 // import { getDatabase, ref, onValue, set, push, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
 
 //import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
@@ -38,7 +38,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app)
 
 const dbRef = ref(db, 'diagsImage');
-
+console.log(dbRef)
 
 let userId = 0; 
 
