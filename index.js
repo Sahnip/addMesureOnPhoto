@@ -15,12 +15,8 @@ let btnAnnuler = ""
 let newPic = ''
 
 
-//const getPhoto = document.getElementById('get-photo').files[0]
 
 const previousDiag = document.querySelector('.previous-diag')
-// import { initializeApp } from './node_modules/firebase/app';
-// import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
-
 
 //e.target.files[0]
 const firebaseConfig = {
@@ -40,7 +36,6 @@ const db = getDatabase(app)
 const dbRef = ref(db, 'diagsImage');
 console.log(dbRef)
 
-let userId = 0; 
 
 /*
 
@@ -59,17 +54,44 @@ if(newID = )
 
 
 
-dbRef.once("value")
-  .then(function(snapshot) {
-    var key = snapshot.key; // "ada"
-    //var childKey = snapshot.child("name/last").key; // "last"
-    console.log(key)
-  });
+// dbRef.once("value")
+//   .then(function(snapshot) {
+//     var key = snapshot.key; // "ada"
+//     //var childKey = snapshot.child("name/last").key; // "last"
+//     console.log(key)
+//   });
 
 
-//var ref = firebase.database().ref("diagsImage");
-ref.once("value")
-  .then(function(snapshot) {
-    var key = snapshot.key; // "ada"
-    var childKey = snapshot.child("name/last").key; // "last"
-  });
+  let userId = 0; 
+  const nameTest = `S4h${userId}`
+  const mailTest = `test${userId}@test.com`
+  const imgTest = 'getUnsplashImage()'
+  //addFirebase(userId, nameTest, mailTest, imgTest)
+  
+   
+  function addFirebase(userId, name, email, imageUrl) {
+  const idStorage = parseInt(localStorage.getItem("idDiag"))
+  let userIdToString = userId.toString()
+  console.log(idStorage)
+  idStorage === userIdToString ? userIdToString = idStorage + 1 : userIdToString = idStorage+ 1
+  localStorage.setItem('idDiag', userIdToString)
+    set(ref(db, `diagsImage/image${userIdToString}`) , {
+      userId: userId,
+      username: name,
+      email: email,
+      profile_picture : imageUrl
+    });
+    console.log("Un nouveau diag est ajouté")
+}
+   
+  
+
+async function readData() {
+  const snapshot = await get(ref(db, `diagsImage`));
+  const data = await snapshot.val(); 
+  console.log(data)
+  var key = snapshot.child("image10/-OILWS-z6kkgtMeYkuhc").val();
+  console.log(key)
+  // data containe the value that is Read from Database
+}
+readData()
