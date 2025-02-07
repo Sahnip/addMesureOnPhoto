@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.3/firebase
 import { getDatabase, ref, onValue, set, push, get, child, update, remove } from 'https://www.gstatic.com/firebasejs/9.6.3/firebase-database.js';
 // import { getDatabase, ref, onValue, set, push, get, child, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
 
-//import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
+import { v4 as uuidv4 } from './node_modules/uuid/dist/esm-browser/index.js';
 
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
@@ -62,7 +62,7 @@ if(newID = )
 //   });
 
 
-  let userId = 0; 
+  let userId = uuidv4(); 
   const nameTest = `S4h${userId}`
 
 
@@ -88,12 +88,12 @@ window.addEventListener('dblclick', function(e){
   
   // AJOUTER LES ELEMENTS DANS LA BDD
   function addFirebase(userId, name, imageUrl) {
-  const idStorage = parseInt(localStorage.getItem("idDiag"))
-  let userIdToString = userId
-  idStorage === userIdToString ? userIdToString = idStorage + 1 : userIdToString = idStorage+ 1
-  localStorage.setItem('idDiag', userIdToString.toString())
-    set(ref(db, `diagsImage/image${userIdToString}`) , {
-      userId: userIdToString,
+  // const idStorage = parseInt(localStorage.getItem("idDiag"))
+  // let userIdToString = userId
+  // idStorage === userIdToString ? userIdToString = idStorage + 1 : userIdToString = idStorage+ 1
+  // localStorage.setItem('idDiag', userIdToString.toString())
+    set(ref(db, `diagsImage/image${userId}`) , {
+      userId: userId,
       username: name,
       imageUrl : imageUrl
     });
@@ -237,7 +237,7 @@ function render(){
       })
       
       // Sort array by userId in ascending order
-      intVal.sort((a, b) => b.userId - a.userId)
+      //intVal.sort((a, b) => b.userId - a.userId)
       
       // Clear previous content
       previousDiag.innerHTML = ''
