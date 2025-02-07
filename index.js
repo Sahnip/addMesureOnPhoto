@@ -103,9 +103,9 @@ window.addEventListener('dblclick', function(e){
 function removeFirebase(uId, e){
   if(e === `image-${uId}`){
     remove(ref(db, `diagsImage/image${uId}`))
-    //console.log('Le diag est bien supprimé')
+    console.log('Le diag est bien supprimé')
   }else{
-    console("une erreur lors de la suppression")
+    console.log("une erreur lors de la suppression")
   }
 }
    
