@@ -75,7 +75,8 @@ h1{
     z-index: 1001;
 }
 
-.btnCanvas{
+.btnCanvas {
+    margin: 0 5px;
     padding: 17px 25px;
     background-color: #ffffff;
     border: solid 1px rgb(0, 0, 0);
@@ -84,6 +85,29 @@ h1{
     color: #000000;
     box-shadow: 0px 3px 3px #8d8d8d;
     z-index: 1001;
+}
+
+/*
+.divBtnCanvas{
+    z-index: 900;
+    display: flex;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+    */
+
+.divBtnCanvas {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    width: auto; /* Ajusté pour s'adapter au contenu */
 }
 
 #takePicture:hover{
