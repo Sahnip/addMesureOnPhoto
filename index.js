@@ -171,29 +171,47 @@ textinput.addEventListener('click', browseClick);
 
 let image_data_url = ""
 function imageFromInuptToCanvas() {
-  console.log('canvas ouvert')
   const ctx = canvas.getContext('2d');
   var file = document.getElementById('get-photo').files[0];
-  var reader  = new FileReader();
-  // it's onload event and you forgot (parameters)
-  reader.onload = function(e)  {
-      var image = document.createElement("img");
-      image.onload = () => {
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        image_data_url = canvas.toDataURL('image/jpeg');
-        //console.log(image_data_url)
-      };
-      image.src = reader.result;
-
-      //image.src = e.target.result;
-      //document.body.appendChild(image);
-   }
-   // you have to declare the file loading
-   reader.readAsDataURL(file);
-   return image_data_url
+  var reader = new FileReader();
+  
+  reader.onload = function(e) {
+    var image = document.createElement("img");
+    image.onload = () => {
+      // Calculer le ratio pour maintenir les proportions
+      const maxWidth = window.innerWidth * 0.9; // 90% de la largeur de la fenêtre
+      const maxHeight = window.innerHeight * 0.8; // 80% de la hauteur de la fenêtre
+      
+      let newWidth = image.width;
+      let newHeight = image.height;
+      
+      // Ajuster les dimensions tout en conservant le ratio
+      if (newWidth > maxWidth) {
+        const ratio = maxWidth / newWidth;
+        newWidth = maxWidth;
+        newHeight = image.height * ratio;
+      }
+      
+      if (newHeight > maxHeight) {
+        const ratio = maxHeight / newHeight;
+        newHeight = maxHeight;
+        newWidth = newWidth * ratio;
+      }
+      
+      // Définir les dimensions du canvas
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      // Nettoyer le canvas et dessiner l'image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, newWidth, newHeight);
+      
+      image_data_url = canvas.toDataURL('image/jpeg', 0.9); // Qualité à 0.9 pour un bon compromis
+    };
+    image.src = reader.result;
+  }
+  reader.readAsDataURL(file);
+  return image_data_url;
 }
 
 
