@@ -171,42 +171,54 @@ textinput.addEventListener('click', browseClick);
 
 let image_data_url = ""
 function imageFromInuptToCanvas() {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation du contexte
   var file = document.getElementById('get-photo').files[0];
   var reader = new FileReader();
   
   reader.onload = function(e) {
     var image = document.createElement("img");
     image.onload = () => {
-      // Calculer le ratio pour maintenir les proportions
-      const maxWidth = window.innerWidth * 0.9; // 90% de la largeur de la fenêtre
-      const maxHeight = window.innerHeight * 0.8; // 80% de la hauteur de la fenêtre
+      // Utiliser les dimensions naturelles de l'image
+      const naturalWidth = image.naturalWidth;
+      const naturalHeight = image.naturalHeight;
       
-      let newWidth = image.width;
-      let newHeight = image.height;
+      // Calculer le ratio pour l'affichage tout en gardant la résolution originale
+      const maxWidth = window.innerWidth * 0.9;
+      const maxHeight = window.innerHeight * 0.8;
       
-      // Ajuster les dimensions tout en conservant le ratio
-      if (newWidth > maxWidth) {
-        const ratio = maxWidth / newWidth;
-        newWidth = maxWidth;
-        newHeight = image.height * ratio;
+      let displayWidth = naturalWidth;
+      let displayHeight = naturalHeight;
+      
+      // Ajuster les dimensions d'affichage
+      if (displayWidth > maxWidth) {
+        const ratio = maxWidth / displayWidth;
+        displayWidth = maxWidth;
+        displayHeight = naturalHeight * ratio;
       }
       
-      if (newHeight > maxHeight) {
-        const ratio = maxHeight / newHeight;
-        newHeight = maxHeight;
-        newWidth = newWidth * ratio;
+      if (displayHeight > maxHeight) {
+        const ratio = maxHeight / displayHeight;
+        displayHeight = maxHeight;
+        displayWidth = displayWidth * ratio;
       }
       
-      // Définir les dimensions du canvas
-      canvas.width = newWidth;
-      canvas.height = newHeight;
+      // Définir les dimensions du canvas à la taille naturelle de l'image
+      canvas.width = naturalWidth;
+      canvas.height = naturalHeight;
       
-      // Nettoyer le canvas et dessiner l'image
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(image, 0, 0, newWidth, newHeight);
+      // Appliquer un style CSS pour l'affichage
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
       
-      image_data_url = canvas.toDataURL('image/jpeg', 0.9); // Qualité à 0.9 pour un bon compromis
+      // Configurer le contexte pour une meilleure qualité
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Dessiner l'image
+      ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
+      
+      // Utiliser une meilleure qualité pour l'export
+      image_data_url = canvas.toDataURL('image/jpeg', 1.0);
     };
     image.src = reader.result;
   }
