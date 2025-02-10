@@ -170,6 +170,7 @@ textinput.addEventListener('click', browseClick);
 
 
 let image_data_url = ""
+// Render Image on Canvas
 function imageFromInuptToCanvas() {
   const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation du contexte
   var file = document.getElementById('get-photo').files[0];
