@@ -88,10 +88,6 @@ window.addEventListener('dblclick', function(e){
   
   // AJOUTER LES ELEMENTS DANS LA BDD
   function addFirebase(userId, name, imageUrl) {
-  // const idStorage = parseInt(localStorage.getItem("idDiag"))
-  // let userIdToString = userId
-  // idStorage === userIdToString ? userIdToString = idStorage + 1 : userIdToString = idStorage+ 1
-  // localStorage.setItem('idDiag', userIdToString.toString())
     set(ref(db, `diagsImage/image${userId}`) , {
       userId: userId,
       username: name,
