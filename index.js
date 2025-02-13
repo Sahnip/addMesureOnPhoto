@@ -168,59 +168,82 @@ textinput.addEventListener('click', browseClick);
 let image_data_url = ""
 // Render Image on Canvas
 function imageFromInuptToCanvas() {
-  const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation du contexte
-  var file = document.getElementById('get-photo').files[0];
-  var reader = new FileReader();
-  
-  reader.onload = function(e) {
-    var image = document.createElement("img");
-    image.onload = () => {
-      // Utiliser les dimensions naturelles de l'image
-      const naturalWidth = image.naturalWidth;
-      const naturalHeight = image.naturalHeight;
-      
-      // Calculer le ratio pour l'affichage tout en gardant la résolution originale
-      const maxWidth = window.innerWidth * 0.9;
-      const maxHeight = window.innerHeight * 0.8;
-      
-      let displayWidth = naturalWidth;
-      let displayHeight = naturalHeight;
-      
-      // Ajuster les dimensions d'affichage
-      if (displayWidth > maxWidth) {
-        const ratio = maxWidth / displayWidth;
-        displayWidth = maxWidth;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    var file = document.getElementById('get-photo').files[0];
+    var reader = new FileReader();
+    
+    reader.onload = function(e) {
+        var image = new Image();
+        image.onload = () => {
+            setupCanvas(image);
+            showEditInterface();
+        };
+        image.src = reader.result;
+    }
+    reader.readAsDataURL(file);
+}
+
+function setupCanvas(image) {
+    const naturalWidth = image.naturalWidth;
+    const naturalHeight = image.naturalHeight;
+    
+    // Calculer les dimensions optimales
+    const { displayWidth, displayHeight } = calculateOptimalDimensions(
+        naturalWidth, 
+        naturalHeight
+    );
+    
+    // Configurer le canvas
+    configureCanvas(
+        naturalWidth, 
+        naturalHeight, 
+        displayWidth, 
+        displayHeight, 
+        image
+    );
+}
+
+function calculateOptimalDimensions(naturalWidth, naturalHeight) {
+    const maxWidth = window.innerWidth * 0.9;
+    const maxHeight = window.innerHeight * 0.8;
+    
+    let displayWidth = naturalWidth;
+    let displayHeight = naturalHeight;
+    
+    // Calculer le ratio tout en préservant les proportions
+    const ratio = Math.min(
+        maxWidth / naturalWidth,
+        maxHeight / naturalHeight
+    );
+    
+    if (ratio < 1) {
+        displayWidth = naturalWidth * ratio;
         displayHeight = naturalHeight * ratio;
-      }
-      
-      if (displayHeight > maxHeight) {
-        const ratio = maxHeight / displayHeight;
-        displayHeight = maxHeight;
-        displayWidth = displayWidth * ratio;
-      }
-      
-      // Définir les dimensions du canvas à la taille naturelle de l'image
-      canvas.width = naturalWidth;
-      canvas.height = naturalHeight;
-      
-      // Appliquer un style CSS pour l'affichage
-      canvas.style.width = `${displayWidth}px`;
-      canvas.style.height = `${displayHeight}px`;
-      
-      // Configurer le contexte pour une meilleure qualité
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      
-      // Dessiner l'image
-      ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
-      
-      // Utiliser une meilleure qualité pour l'export
-      image_data_url = canvas.toDataURL('image/jpeg', 1.0);
-    };
-    image.src = reader.result;
-  }
-  reader.readAsDataURL(file);
-  return image_data_url;
+    }
+    
+    return { displayWidth, displayHeight };
+}
+
+function configureCanvas(naturalWidth, naturalHeight, displayWidth, displayHeight, image) {
+    const ctx = canvas.getContext('2d', { alpha: false });
+    
+    // Définir les dimensions réelles du canvas
+    canvas.width = naturalWidth;
+    canvas.height = naturalHeight;
+    
+    // Appliquer les dimensions d'affichage via CSS
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
+    
+    // Configurer le contexte
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Dessiner l'image
+    ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
+    
+    // Sauvegarder l'URL de l'image
+    image_data_url = canvas.toDataURL('image/jpeg', 1.0);
 }
 
 
@@ -691,6 +714,30 @@ function redrawAllShapes() {
             drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, shape.isSelected);
         }
     });
+}
+
+// Ajout des variables pour gérer l'interface
+const toolSelector = document.querySelector('.tool');
+const toolbar = document.querySelector('.toolbar');
+
+function showEditInterface() {
+    // Masquer le sélecteur d'image
+    toolSelector.classList.add('hidden');
+    
+    // Afficher la barre d'outils et le canvas
+    toolbar.classList.remove('hidden');
+    canvas.classList.remove('hidden');
+    
+    // Créer les boutons de contrôle
+    createBtnCanvas();
+}
+
+function hideEditInterface() {
+    // Réinitialiser l'interface
+    toolSelector.classList.remove('hidden');
+    toolbar.classList.add('hidden');
+    canvas.classList.add('hidden');
+    removeBtnCanvas();
 }
 
 
