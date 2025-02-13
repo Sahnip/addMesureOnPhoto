@@ -367,20 +367,26 @@ function drawHandles() {
 }
 
 // Fonction pour dessiner le rectangle
-function drawRectangle() {
-		ctx.strokeStyle = currentColor;
+function drawRectangle(points, isSelected) {
     ctx.beginPath();
-    ctx.moveTo(rectangleInfo.points[0].x, rectangleInfo.points[0].y);
-    rectangleInfo.points.forEach(point => {
+    ctx.moveTo(points[0].x, points[0].y);
+    points.forEach(point => {
         ctx.lineTo(point.x, point.y);
     });
     ctx.closePath();
+    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
     ctx.stroke();
-    drawHandles();
+
+    // Dessiner les poignées si sélectionné
+    if (isSelected) {
+        points.forEach(point => {
+            drawHandle(point.x, point.y);
+        });
+    }
 }
 
-function drawArrow(startX, startY, endX, endY) {
-		ctx.strokeStyle = currentColor;
+function drawArrow(startX, startY, endX, endY, isSelected) {
+    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
     // Corps de la flèche
     ctx.beginPath();
     ctx.moveTo(startX, startY);
@@ -412,10 +418,10 @@ function redrawShapes() {
     shapes.forEach(shape => {
         ctx.strokeStyle = shape.color;
         if (shape.type === 'arrow') {
-            drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
+            drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, shape.isSelected);
         } else if (shape.type === 'rectangle') {
             // Adapter le code du rectangle pour utiliser les propriétés de shape
-            drawRectangle(shape);
+            drawRectangle(shape.points, shape.isSelected);
         }
     });
 }
@@ -464,60 +470,136 @@ function distancePointToLine(px, py, x1, y1, x2, y2) {
 
 // Vérifier si l'utilisateur clique bien une forme
 function isPointInShape(x, y, shape) {
-  switch(shape.type) {
-    case 'rectangle':
-      return (x >= shape.points[0].x && // point est à droite du bord gauche
-              x <= shape.points[1].x && // point est à gauche du bord droit
-              y >= shape.points[0].y && // point est en dessous du bord supérieur
-              y <= shape.points[2].y);  // point est au dessus du bord inférieur
-    
-    case 'arrow':
-      // Pour une ligne (flèche), on peut calculer la distance du point à la ligne
-      const distance = distancePointToLine(
-        x, y,
-        shape.startX, shape.startY,
-        shape.endX, shape.endY
-      );
-      return distance < 5; // 5 pixels de tolérance
-      
-    case 'angle':
-      // Pour l'angle, on vérifie la distance aux deux segments
-      const dist1 = distancePointToLine(x, y, 
-                                      shape.points[2].x, shape.points[2].y,
-                                      shape.points[0].x, shape.points[0].y);
-      const dist2 = distancePointToLine(x, y,
-                                      shape.points[2].x, shape.points[2].y,
-                                      shape.points[1].x, shape.points[1].y);
-      return Math.min(dist1, dist2) < 5;
-  }
+    switch(shape.type) {
+        case 'rectangle':
+            // Vérifier si le point est dans le rectangle
+            const points = shape.points;
+            const minX = Math.min(...points.map(p => p.x));
+            const maxX = Math.max(...points.map(p => p.x));
+            const minY = Math.min(...points.map(p => p.y));
+            const maxY = Math.max(...points.map(p => p.y));
+            return x >= minX && x <= maxX && y >= minY && y <= maxY;
+            
+        case 'arrow':
+            // Vérifier si le point est près de la ligne de la flèche
+            return distancePointToLine(x, y, shape.startX, shape.startY, shape.endX, shape.endY) < 5;
+            
+        default:
+            return false;
+    }
 }
+
+let selectedShape = null;
+function handleCanvasClick(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // D'abord, désélectionner la forme précédente
+  if (selectedShape) {
+      selectedShape.isSelected = false;
+  }
+
+  // Chercher si on clique sur une forme existante
+  let clickedOnShape = false;
+  
+  for (let shape of shapes) {
+      if (isPointInShape(x, y, shape)) {
+          shape.isSelected = true;
+          selectedShape = shape;
+          clickedOnShape = true;
+          break; // On sort de la boucle dès qu'on trouve une forme
+      }
+  }
+
+  // Si on n'a cliqué sur aucune forme et qu'un outil est sélectionné
+  if (!clickedOnShape && currentTool) {
+      isDrawing = true;
+      startDrawing(x, y);
+  }
+
+  // Redessiner le canvas
+  redrawCanvas();
+}
+
+
+function handleMouseDown(e) {
+  const rect = canvas.getBoundingClientRect();
+  startX = e.clientX - rect.left;
+  startY = e.clientY - rect.top;
+
+  // Vérifier d'abord si on clique sur une forme existante
+  let clickedOnShape = false;
+  
+  for (let shape of shapes) {
+      if (isPointInShape(startX, startY, shape)) {
+          if (selectedShape) {
+              selectedShape.isSelected = false;
+          }
+          shape.isSelected = true;
+          selectedShape = shape;
+          clickedOnShape = true;
+          break;
+      }
+  }
+
+  if (!clickedOnShape) {
+      isDrawing = true;
+  }
+
+  redrawCanvas();
+}
+
+
+function redrawCanvas() {
+  const ctx = canvas.getContext('2d');
+  
+  // Effacer le canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Redessiner l'image de fond si elle existe
+  if (image_data_url) {
+      const img = new Image();
+      img.src = image_data_url;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  }
+  
+  // Redessiner toutes les formes
+  shapes.forEach(shape => {
+      drawShape(ctx, shape);
+  });
+}
+
 
 
 // Gestion du début du dessin
 canvas.addEventListener('mousedown', function(e) {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    if(currentShape === 'rectangle') {
-        if(!rectangleInfo.points.length) {
-            // Nouveau rectangle
-            isDrawing = true;
-            rectangleInfo.points = [
-                {x: mouseX, y: mouseY}, // top-left
-                {x: mouseX, y: mouseY}, // top-right
-                {x: mouseX, y: mouseY}, // bottom-right
-                {x: mouseX, y: mouseY}  // bottom-left
-            ];
-        } else {
-            // Vérifier si on clique sur une poignée
-            rectangleInfo.selectedHandle = getSelectedHandle(mouseX, mouseY);
-            if(rectangleInfo.selectedHandle !== -1) {
-                isDrawing = true;
+
+    // Vérifier d'abord si on clique sur une forme existante
+    let clickedOnShape = false;
+    
+    for (let shape of shapes) {
+        if (isPointInShape(mouseX, mouseY, shape)) {
+            if (selectedShape) {
+                selectedShape.isSelected = false;
             }
+            shape.isSelected = true;
+            selectedShape = shape;
+            clickedOnShape = true;
+            redrawAllShapes(); // Nouvelle fonction à créer
+            break;
         }
-     }else if(currentShape === 'arrow') {
-        isDrawing = true;
-        startX = mouseX;
-        startY = mouseY;
+    }
+
+    if (!clickedOnShape) {
+        // Votre code existant pour le dessin
+        if(currentShape === 'rectangle') {
+            // ... votre code existant ...
+        } else if(currentShape === 'arrow') {
+            // ... votre code existant ...
+        }
     }
 });
 
@@ -546,11 +628,11 @@ canvas.addEventListener('mousemove', function(e) {
 
         // Redessiner
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawRectangle();
+        drawRectangle(rectangleInfo.points, rectangleInfo.isSelected);
     }else if(currentShape === 'arrow') {
         endX = mouseX;
         endY = mouseY;
-        drawArrow(startX, startY, endX, endY);
+        drawArrow(startX, startY, endX, endY, rectangleInfo.isSelected);
     }
 });
 
@@ -576,6 +658,19 @@ canvas.addEventListener('mouseup', function(e) {
     isDrawing = false;
     rectangleInfo.selectedHandle = -1;
 });
+
+function redrawAllShapes() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Redessiner toutes les formes
+    shapes.forEach(shape => {
+        if (shape.type === 'rectangle') {
+            drawRectangle(shape.points, shape.isSelected);
+        } else if (shape.type === 'arrow') {
+            drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, shape.isSelected);
+        }
+    });
+}
 
 
 
