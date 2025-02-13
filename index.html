@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="/logo-abc-diags.ico">
     <link rel="manifest" href="/manifest.json"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/uuid@latest/dist/umd/uuidv4.min.js"></script>
     <script src="https://unpkg.com/geometric@2.5.5/build/geometric.js"></script>
     <script src="https://unpkg.com/geometric@2.5.5/build/geometric.min.js"></script>
@@ -31,17 +32,39 @@
         <div class="divBtnCanvas"></div>
 
         <video id="video" width="320" height="240" class="camera-hidden" autoplay></video>
-        <canvas id="canvas" width="320" height="240" class="canvas hidden"></canvas>
+        <div class="editor-container">
+            <!-- Zone de canvas -->
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <!-- Barre d'outils -->
+            <div class="toolbar hidden">
+                <button class="tool-button" onclick="setShape('arrow')">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>Flèche</span>
+                </button>
+                <button class="tool-button" onclick="setShape('rectangle')">
+                    <i class="fas fa-square"></i>
+                    <span>Surface</span>
+                </button>
+                <button class="tool-button" onclick="setShape('angle')">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>Angle</span>
+                </button>
+                <button class="tool-button" onclick="setShape('text')">
+                    <i class="fas fa-font"></i>
+                    <span>Texte</span>
+                </button>
+                <button class="tool-button delete-button" onclick="deleteSelectedShape()">
+                    <i class="fas fa-trash"></i>
+                    <span>Supprimer</span>
+                </button>
+            </div>
+        </div>
+
         <button id="close-camera-button" class="camera-hidden">X</button>
         <button id="close-canvas-button" class="camera-hidden">X</button>
-
-        <div class="toolbar hidden">
-            <button onclick="setShape('rectangle')">Rectangle</button>
-            <button onclick="setShape('arrow')">Flèche</button>
-            <input type="color" id="colorPicker" onchange="setColor(this.value)">
-            <button onclick="undoLastShape()">Annuler</button>
-        </div>
-        
     </div>
 
     <script src="index.js" type="module"></script>
