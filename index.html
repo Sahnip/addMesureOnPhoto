@@ -35,6 +35,12 @@
         <button id="close-camera-button" class="camera-hidden">X</button>
         <button id="close-canvas-button" class="camera-hidden">X</button>
 
+        <div class="toolbar hidden">
+            <button onclick="setShape('rectangle')">Rectangle</button>
+            <button onclick="setShape('arrow')">Flèche</button>
+            <input type="color" id="colorPicker" onchange="setColor(this.value)">
+            <button onclick="undoLastShape()">Annuler</button>
+        </div>
         
     </div>
 

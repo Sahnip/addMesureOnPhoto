@@ -280,3 +280,304 @@ function render(){
 }
 
 render()
+
+
+// APPRENTISSAGE AVEC CLAUDE POUR TOOL CARRÉ, FLÈCHE...
+
+
+const ctx = canvas.getContext('2d');
+const rect = canvas.getBoundingClientRect();
+
+let startX, startY, endX, endY;
+
+
+let rectangleInfo = {
+    points: [],
+    isSelected: false,
+    selectedHandle: -1
+};
+
+let isDrawing = false;
+
+// État global pour suivre quelle forme on dessine
+let currentShape = 'rectangle'; // ou 'arrow'
+
+let currentColor = '#000000'; // Couleur par défaut : noir
+
+let shapes = [];
+
+// Structure d'une forme
+class Shape {
+    constructor(type, color) {
+        this.type = type;
+        this.color = color;
+        this.startX = 0;
+        this.startY = 0;
+        this.endX = 0;
+        this.endY = 0;
+    }
+}
+
+function setColor(color) {
+    currentColor = color;
+    ctx.strokeStyle = color;
+}
+
+// Fonction pour changer de forme
+function setShape(shape) {
+    currentShape = shape;
+    // Réinitialiser l'état
+    isDrawing = false;
+    rectangleInfo.points = [];
+    rectangleInfo.isSelected = false;
+    rectangleInfo.selectedHandle = -1;
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function isPointInHandle(mouseX, mouseY, handleX, handleY, handleSize = 6) {
+    // On calcule la distance entre le point de la souris et le centre de la poignée
+    const distance = Math.sqrt(
+        Math.pow(mouseX - handleX, 2) + 
+        Math.pow(mouseY - handleY, 2)
+    );
+    
+    // Si la distance est inférieure à la taille de la poignée, la souris est dessus
+    return distance <= handleSize;
+}
+
+function getSelectedHandle(mouseX, mouseY) {
+    for(let i = 0; i < rectangleInfo.points.length; i++) {
+        const point = rectangleInfo.points[i];
+        if(isPointInHandle(mouseX, mouseY, point.x, point.y)) {
+            return i; // Retourne l'index du coin sélectionné
+        }
+    }
+    return -1; // Aucun coin sélectionné
+}
+
+// Fonction pour dessiner les poignées
+function drawHandles() {
+    ctx.fillStyle = 'blue';
+    rectangleInfo.points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// Fonction pour dessiner le rectangle
+function drawRectangle() {
+		ctx.strokeStyle = currentColor;
+    ctx.beginPath();
+    ctx.moveTo(rectangleInfo.points[0].x, rectangleInfo.points[0].y);
+    rectangleInfo.points.forEach(point => {
+        ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
+    drawHandles();
+}
+
+function drawArrow(startX, startY, endX, endY) {
+		ctx.strokeStyle = currentColor;
+    // Corps de la flèche
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+
+    // Calcul de l'angle de la pointe
+    const angle = Math.atan2(endY - startY, endX - startX);
+    
+    // Dessin de la pointe
+    ctx.beginPath();
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(
+        endX - 15 * Math.cos(angle - Math.PI/6),
+        endY - 15 * Math.sin(angle - Math.PI/6)
+    );
+    ctx.lineTo(
+        endX - 15 * Math.cos(angle + Math.PI/6),
+        endY - 15 * Math.sin(angle + Math.PI/6)
+    );
+    ctx.closePath();
+    ctx.fillStyle = 'black';
+    ctx.fill();
+}
+
+
+function redrawShapes() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shapes.forEach(shape => {
+        ctx.strokeStyle = shape.color;
+        if (shape.type === 'arrow') {
+            drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
+        } else if (shape.type === 'rectangle') {
+            // Adapter le code du rectangle pour utiliser les propriétés de shape
+            drawRectangle(shape);
+        }
+    });
+}
+
+// Retour en arrière après dessin d'une forme
+function undoLastShape() {
+    if (shapes.length > 0) {
+        shapes.pop();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);  // Efface le canvas
+        redrawShapes();
+    }
+}
+
+
+// Calcul de la distance d'un point avec une ligne
+function distancePointToLine(px, py, x1, y1, x2, y2) {
+  // Calcul basé sur la formule mathématique de la distance point-ligne
+  const A = px - x1;
+  const B = py - y1;
+  const C = x2 - x1;
+  const D = y2 - y1;
+
+  const dot = A * C + B * D;
+  const len_sq = C * C + D * D;
+  const param = len_sq !== 0 ? dot / len_sq : -1;
+
+  let xx, yy;
+
+  if (param < 0) {
+      xx = x1;
+      yy = y1;
+  } else if (param > 1) {
+      xx = x2;
+      yy = y2;
+  } else {
+      xx = x1 + param * C;
+      yy = y1 + param * D;
+  }
+
+  const dx = px - xx;
+  const dy = py - yy;
+
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+
+// Vérifier si l'utilisateur clique bien une forme
+function isPointInShape(x, y, shape) {
+  switch(shape.type) {
+    case 'rectangle':
+      return (x >= shape.points[0].x && // point est à droite du bord gauche
+              x <= shape.points[1].x && // point est à gauche du bord droit
+              y >= shape.points[0].y && // point est en dessous du bord supérieur
+              y <= shape.points[2].y);  // point est au dessus du bord inférieur
+    
+    case 'arrow':
+      // Pour une ligne (flèche), on peut calculer la distance du point à la ligne
+      const distance = distancePointToLine(
+        x, y,
+        shape.startX, shape.startY,
+        shape.endX, shape.endY
+      );
+      return distance < 5; // 5 pixels de tolérance
+      
+    case 'angle':
+      // Pour l'angle, on vérifie la distance aux deux segments
+      const dist1 = distancePointToLine(x, y, 
+                                      shape.points[2].x, shape.points[2].y,
+                                      shape.points[0].x, shape.points[0].y);
+      const dist2 = distancePointToLine(x, y,
+                                      shape.points[2].x, shape.points[2].y,
+                                      shape.points[1].x, shape.points[1].y);
+      return Math.min(dist1, dist2) < 5;
+  }
+}
+
+
+// Gestion du début du dessin
+canvas.addEventListener('mousedown', function(e) {
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    if(currentShape === 'rectangle') {
+        if(!rectangleInfo.points.length) {
+            // Nouveau rectangle
+            isDrawing = true;
+            rectangleInfo.points = [
+                {x: mouseX, y: mouseY}, // top-left
+                {x: mouseX, y: mouseY}, // top-right
+                {x: mouseX, y: mouseY}, // bottom-right
+                {x: mouseX, y: mouseY}  // bottom-left
+            ];
+        } else {
+            // Vérifier si on clique sur une poignée
+            rectangleInfo.selectedHandle = getSelectedHandle(mouseX, mouseY);
+            if(rectangleInfo.selectedHandle !== -1) {
+                isDrawing = true;
+            }
+        }
+     }else if(currentShape === 'arrow') {
+        isDrawing = true;
+        startX = mouseX;
+        startY = mouseY;
+    }
+});
+
+
+
+// Gestion du mouvement
+canvas.addEventListener('mousemove', function(e) {
+    if (!isDrawing) return;
+    
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Permet d'éviter de dessiner des milliers de fleches
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(currentShape === 'rectangle') {
+    		if(rectangleInfo.selectedHandle !== -1) {
+        // Modification d'un coin existant
+        rectangleInfo.points[rectangleInfo.selectedHandle] = {x: mouseX, y: mouseY};
+        } else {
+            // Création d'un nouveau rectangle
+            rectangleInfo.points[1].x = mouseX;
+            rectangleInfo.points[2].x = mouseX;
+            rectangleInfo.points[2].y = mouseY;
+            rectangleInfo.points[3].y = mouseY;
+        }
+
+        // Redessiner
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawRectangle();
+    }else if(currentShape === 'arrow') {
+        endX = mouseX;
+        endY = mouseY;
+        drawArrow(startX, startY, endX, endY);
+    }
+});
+
+// Fin du dessin
+canvas.addEventListener('mouseup', function(e) {
+    if (isDrawing) {
+        const newShape = new Shape(currentShape, currentColor);
+        
+        if (currentShape === 'rectangle') {
+            // Pour le rectangle, copier les points
+            newShape.points = [...rectangleInfo.points];
+        } else if (currentShape === 'arrow') {
+            // Pour la flèche, copier les coordonnées
+            newShape.startX = startX;
+            newShape.startY = startY;
+            newShape.endX = endX;
+            newShape.endY = endY;
+        }
+        
+        shapes.push(newShape);
+    }
+    
+    isDrawing = false;
+    rectangleInfo.selectedHandle = -1;
+});
+
+
+
+
+
