@@ -570,6 +570,27 @@ function redrawCanvas() {
   });
 }
 
+// Supprimer une forme
+function deleteSelectedShape() {
+  if (selectedShape) {
+      // Trouver l'index de la forme sélectionnée
+      const index = shapes.findIndex(shape => shape === selectedShape);
+      if (index !== -1) {
+          // Supprimer la forme du tableau
+          shapes.splice(index, 1);
+          selectedShape = null;
+          // Redessiner le canvas
+          redrawAllShapes();
+      }
+  }
+}
+
+// Ajouter un écouteur pour la touche "Delete" ou "Backspace"
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+      deleteSelectedShape();
+  }
+});
 
 
 // Gestion du début du dessin
