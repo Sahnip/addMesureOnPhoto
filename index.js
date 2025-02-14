@@ -32,9 +32,9 @@ const firebaseConfig = {
   
 const app = initializeApp(firebaseConfig);
 
-const db = getDatabase(app)
+const database = getDatabase(app)
 
-const dbRef = ref(db, 'diagsImage');
+const dbRef = ref(database, 'diagsImage');
 
 
 /*
@@ -68,7 +68,7 @@ if(newID = )
 
 window.addEventListener('dblclick', function(e){
   let arraySnap = []
-  const distanceRef = ref(db, `diagsImage`);
+  const distanceRef = ref(database, `diagsImage`);
   onValue(distanceRef, (snapshot) => {
       const datas = snapshot.val()
       arraySnap = [] // Reset array before adding new values
@@ -88,7 +88,7 @@ window.addEventListener('dblclick', function(e){
   
   // AJOUTER LES ELEMENTS DANS LA BDD
   function addFirebase(userId, name, imageUrl) {
-    set(ref(db, `diagsImage/image${userId}`) , {
+    set(ref(database, `diagsImage/image${userId}`) , {
       userId: userId,
       username: name,
       imageUrl : imageUrl
@@ -98,7 +98,7 @@ window.addEventListener('dblclick', function(e){
 
 function removeFirebase(uId, e){
   if(e === `image-${uId}`){
-    remove(ref(db, `diagsImage/image${uId}`))
+    remove(ref(database, `diagsImage/image${uId}`))
     console.log('Le diag est bien supprimé')
   }else{
     console.log("une erreur lors de la suppression")
@@ -108,7 +108,7 @@ function removeFirebase(uId, e){
   
 // RÉCUPÉRER LES ELEMENT DE LA BDD
 async function readData() {
-  const snapshot = await get(ref(db, `diagsImage`));
+  const snapshot = await get(ref(database, `diagsImage`));
   const data = await snapshot.val();
   // data containe the value that is Read from Database
 }
@@ -329,7 +329,7 @@ function removeBtnCanvas(){
 
 let intVal = []
 function render(){
-  const distanceRef = ref(db, `diagsImage`);
+  const distanceRef = ref(database, `diagsImage`);
   onValue(distanceRef, (snapshot) => {
       const datas = snapshot.val()
       intVal = [] // Reset array before adding new values
@@ -402,28 +402,26 @@ window.setColor = function(color) {
     currentColor = color;
 };
 
-// Fonction pour dessiner un rectangle
-function drawRectangle(points, isSelected = false) {
-    if (!points || points.length !== 4) return;
-    
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-    }
-    ctx.closePath();
-    
-    // Style du rectangle
-    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
+// Modifier les fonctions de dessin pour accepter un contexte personnalisé
+function drawRectangle(points, isSelected = false, context = ctx) {
+  if (!points || points.length !== 4) return;
+  
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  points.forEach(point => {
+      context.lineTo(point.x, point.y);
+  });
+  context.closePath();
+  
+  context.strokeStyle = isSelected ? '#FF0000' : currentColor;
+  context.lineWidth = 2;
+  context.stroke();
 
-    // Dessiner les poignées si sélectionné
-    if (isSelected) {
-        points.forEach(point => {
-            drawHandle(point.x, point.y);
-        });
-    }
+  if (isSelected) {
+      points.forEach(point => {
+          drawHandle(point.x, point.y, context);
+      });
+  }
 }
 
 // Fonction pour dessiner une poignée
@@ -438,27 +436,25 @@ function drawHandle(x, y) {
 }
 
 // Fonction pour dessiner une flèche
-function drawArrow(startX, startY, endX, endY, isSelected = false) {
-    const headLength = 20; // Longueur de la pointe de la flèche
-    const angle = Math.atan2(endY - startY, endX - startX);
-    
-    // Ligne principale
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Pointe de la flèche
-    ctx.beginPath();
-    ctx.moveTo(endX, endY);
-    ctx.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6),
-               endY - headLength * Math.sin(angle - Math.PI / 6));
-    ctx.moveTo(endX, endY);
-    ctx.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6),
-               endY - headLength * Math.sin(angle + Math.PI / 6));
-    ctx.stroke();
+function drawArrow(startX, startY, endX, endY, isSelected = false, context = ctx) {
+  const headLength = 20;
+  const angle = Math.atan2(endY - startY, endX - startX);
+  
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.lineTo(endX, endY);
+  context.strokeStyle = isSelected ? '#FF0000' : currentColor;
+  context.lineWidth = 2;
+  context.stroke();
+  
+  context.beginPath();
+  context.moveTo(endX, endY);
+  context.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6),
+                 endY - headLength * Math.sin(angle - Math.PI / 6));
+  context.moveTo(endX, endY);
+  context.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6),
+                 endY - headLength * Math.sin(angle + Math.PI / 6));
+  context.stroke();
 }
 
 // Fonction pour redessiner le canvas
@@ -490,23 +486,23 @@ function redrawCanvas() {
 }
 
 // Fonction pour dessiner un angle
-function drawAngle(points, isSelected = false) {
-    if (!points || points.length !== 3) return;
-    
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    ctx.lineTo(points[2].x, points[2].y);
-    ctx.lineTo(points[1].x, points[1].y);
-    
-    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    if (isSelected) {
-        points.forEach(point => {
-            drawHandle(point.x, point.y);
-        });
-    }
+function drawAngle(points, isSelected = false, context = ctx) {
+  if (!points || points.length !== 3) return;
+  
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[2].x, points[2].y);
+  context.lineTo(points[1].x, points[1].y);
+  
+  context.strokeStyle = isSelected ? '#FF0000' : currentColor;
+  context.lineWidth = 2;
+  context.stroke();
+  
+  if (isSelected) {
+      points.forEach(point => {
+          drawHandle(point.x, point.y, context);
+      });
+  }
 }
 
 // Fonction pour sélectionner l'outil
@@ -625,35 +621,67 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fonction pour sauvegarder l'état du canvas
-window.saveCanvas = function() {
-    // Créer un objet contenant toutes les informations
-    const canvasData = {
-        imageUrl: image_data_url,
-        shapes: shapes.map(shape => ({
-            type: shape.type,
-            ...shape,
-            isSelected: false // Réinitialiser la sélection pour le stockage
-        })),
-        timestamp: new Date().toISOString()
-    };
+window.saveCanvas = async function() {
+  try {
+      // Capturer l'état actuel du canvas avec les formes
+      const canvasWithShapes = document.createElement('canvas');
+      const tempCtx = canvasWithShapes.getContext('2d');
+      canvasWithShapes.width = canvas.width;
+      canvasWithShapes.height = canvas.height;
 
-    // Sauvegarder dans Firebase
-    const newImageRef = push(ref(db, 'images'));
-    set(newImageRef, canvasData)
-        .then(() => {
-            console.log('Canvas sauvegardé avec succès');
-            showSaveFeedback(true);
-        })
-        .catch(error => {
-            console.error('Erreur lors de la sauvegarde:', error);
-            showSaveFeedback(false);
-        });
+      // Dessiner l'image de base
+      const baseImage = new Image();
+      await new Promise((resolve, reject) => {
+          baseImage.onload = resolve;
+          baseImage.onerror = reject;
+          baseImage.src = image_data_url;
+      });
+      tempCtx.drawImage(baseImage, 0, 0);
+
+      // Dessiner toutes les formes
+      shapes.forEach(shape => {
+          if (shape.type === 'rectangle') {
+              drawRectangle(shape.points, false, tempCtx);
+          } else if (shape.type === 'arrow') {
+              drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, false, tempCtx);
+          } else if (shape.type === 'angle') {
+              drawAngle(shape.points, false, tempCtx);
+          }
+      });
+
+      // Créer l'objet de données à sauvegarder
+      const canvasData = {
+          imageUrl: canvasWithShapes.toDataURL('image/jpeg', 1.0),
+          shapes: shapes.map(shape => ({
+              type: shape.type,
+              ...shape,
+              isSelected: false
+          })),
+          timestamp: new Date().toISOString()
+      };
+
+      // Sauvegarder dans Firebase
+      const newImageRef = push(ref(database, 'diagsImage'));
+      await set(newImageRef, canvasData);
+
+      console.log('Canvas sauvegardé avec succès');
+      showSaveFeedback(true);
+
+      // Retourner à l'interface principale après un court délai
+      setTimeout(() => {
+          window.cancelEdit();
+      }, 1000);
+
+  } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      showSaveFeedback(false);
+  }
 };
 
 // Fonction pour charger une image existante
 window.loadSavedCanvas = function(imageId) {
     // Récupérer les données depuis Firebase
-    get(ref(db, `images/${imageId}`))
+    get(ref(database, `diagsImage/${imageId}`))
         .then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
