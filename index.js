@@ -592,7 +592,6 @@ if (typeof window.cancelEdit === 'undefined') {
 document.addEventListener('DOMContentLoaded', function() {
     const toolbar = document.querySelector('.toolbar');
     
-    // Mettre à jour les onclick des boutons
     toolbar.innerHTML = `
         <button class="tool-button" onclick="window.setShape('arrow')">
             <i class="fas fa-arrow-right"></i>
@@ -614,12 +613,85 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="fas fa-trash"></i>
             <span>Supprimer</span>
         </button>
+        <button class="tool-button save-button" onclick="window.saveCanvas()">
+            <i class="fas fa-save"></i>
+            <span>Enregistrer</span>
+        </button>
         <button class="tool-button back-button" onclick="window.cancelEdit()">
             <i class="fas fa-times"></i>
             <span>Annuler</span>
         </button>
     `;
 });
+
+// Fonction pour sauvegarder l'état du canvas
+window.saveCanvas = function() {
+    // Créer un objet contenant toutes les informations
+    const canvasData = {
+        imageUrl: image_data_url,
+        shapes: shapes.map(shape => ({
+            type: shape.type,
+            ...shape,
+            isSelected: false // Réinitialiser la sélection pour le stockage
+        })),
+        timestamp: new Date().toISOString()
+    };
+
+    // Sauvegarder dans Firebase
+    const newImageRef = push(ref(db, 'images'));
+    set(newImageRef, canvasData)
+        .then(() => {
+            console.log('Canvas sauvegardé avec succès');
+            showSaveFeedback(true);
+        })
+        .catch(error => {
+            console.error('Erreur lors de la sauvegarde:', error);
+            showSaveFeedback(false);
+        });
+};
+
+// Fonction pour charger une image existante
+window.loadSavedCanvas = function(imageId) {
+    // Récupérer les données depuis Firebase
+    get(ref(db, `images/${imageId}`))
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Charger l'image
+                const img = new Image();
+                img.onload = function() {
+                    // Configurer le canvas
+                    setupCanvas(img);
+                    
+                    // Restaurer les formes
+                    shapes = data.shapes;
+                    
+                    // Afficher l'interface d'édition
+                    showEditInterface();
+                    
+                    // Redessiner le canvas
+                    redrawCanvas();
+                };
+                img.src = data.imageUrl;
+                image_data_url = data.imageUrl;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement:', error);
+        });
+};
+
+// Feedback visuel pour la sauvegarde
+function showSaveFeedback(success) {
+    const saveButton = document.querySelector('.save-button');
+    if (saveButton) {
+        saveButton.classList.add(success ? 'save-success' : 'save-error');
+        setTimeout(() => {
+            saveButton.classList.remove('save-success', 'save-error');
+        }, 2000);
+    }
+}
 
 // Fonction pour dessiner les poignées
 function drawHandles() {
