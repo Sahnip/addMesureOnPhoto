@@ -80,7 +80,7 @@ window.addEventListener('dblclick', function(e){
       intVal.map(val => {
         const eventi = e.target.dataset.iddiag
         console.log(`Voici la comparaison de ce tour ${val.userId} avec ${eventi}`)
-        removeFirebase(val.userId, eventi)
+        //removeFirebase(val.userId, eventi)
       })
   })
 })
@@ -115,41 +115,106 @@ async function readData() {
 readData()
 
 
-fileInput.addEventListener('change', function(event){
-  handleChange()
-  const files = event.target.files;
-  if (files.length > 0) {
-    canvas.classList.remove('hidden')
-    imageFromInuptToCanvas();
-    createBtnCanvas()
-    console.log(image_data_url)
-    btnEnregistrer.addEventListener('click', function(){
-        addFirebase(userId, nameTest, image_data_url)
-        image_data_url=""
-        canvas.classList.add('hidden')
-        removeBtnCanvas()
-        textinput.value = "+ Nouvelle superficie"
-        console.log('canvas fermé')
-        
-        setTimeout(() => {
-          console.log("Rechargement dans 1s");
-          window.location.reload()
-        }, "1000");
-    })
+// Variables globales
+const ctx = canvas.getContext('2d', { alpha: false });
+
+// Fonction d'initialisation
+function initCanvas() {
+    if (!canvas) {
+        console.error('Canvas non trouvé');
+        return;
+    }
+    ctx = canvas.getContext('2d', { alpha: false });
+}
+
+// Fonction pour afficher l'interface d'édition
+function showEditInterface() {
+    // Afficher le conteneur d'édition
+    const editorContainer = document.querySelector('.editor-container');
+    editorContainer.style.display = 'flex';
+    editorContainer.classList.add('active');
     
-    btnAnnuler.addEventListener('click', function(){
-        image_data_url=""
-        canvas.classList.add('hidden')
-        removeBtnCanvas()
-        textinput.value = "+ Nouvelle superficie"
-        console.log('canvas fermé')
-        window.location.reload()
-    })
-  } else {
-      console.log('Aucun fichier sélectionné');
-  }
-  
-})
+    // Afficher le canvas et son conteneur
+    const canvasContainer = document.querySelector('.canvas-container');
+    canvasContainer.style.display = 'flex';
+    canvas.style.display = 'block';
+    
+    // Afficher la toolbar
+    const toolbar = document.querySelector('.toolbar');
+    toolbar.style.display = 'flex';
+    toolbar.classList.remove('hidden');
+    
+    // Masquer l'interface principale
+    const toolElement = document.querySelector('.tool');
+    toolElement.classList.add('hidden');
+    
+    // Initialiser les événements de dessin
+    initDrawingEvents();
+    
+    console.log('Interface d\'édition affichée avec événements de dessin'); // Debug
+}
+
+// Modifier la fonction imageFromInuptToCanvas
+function imageFromInuptToCanvas() {
+    if (!canvas) {
+        console.error('Canvas non trouvé');
+        return;
+    }
+
+    console.log('Début du traitement de l\'image'); // Debug
+    
+    var file = document.getElementById('get-photo').files[0];
+    var reader = new FileReader();
+    
+    reader.onload = function(e) {
+        console.log('Image chargée'); // Debug
+        var image = new Image();
+        
+        image.onload = () => {
+            console.log('Dimensions image:', image.width, image.height); // Debug
+            
+            // Réinitialiser l'état
+            shapes = [];
+            currentShape = null;
+            selectedShape = null;
+            isDrawing = false;
+            
+            // Configurer et afficher l'interface
+            setupCanvas(image);
+            showEditInterface();
+        };
+        
+        image.src = e.target.result;
+    }
+    
+    reader.readAsDataURL(file);
+}
+
+// Remplaçons tous les gestionnaires existants par un seul
+document.addEventListener('DOMContentLoaded', function() {
+    const takePictureBtn = document.getElementById('takePicture');
+    const fileInput = document.getElementById('get-photo');
+
+    // Supprimer les anciens écouteurs d'événements s'ils existent
+    takePictureBtn.replaceWith(takePictureBtn.cloneNode(true));
+    fileInput.replaceWith(fileInput.cloneNode(true));
+
+    // Récupérer les nouveaux éléments
+    const newTakePictureBtn = document.getElementById('takePicture');
+    const newFileInput = document.getElementById('get-photo');
+
+    // Ajouter les nouveaux écouteurs
+    newTakePictureBtn.addEventListener('click', function() {
+        newFileInput.click();
+    });
+
+    newFileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            console.log('Fichier sélectionné'); // Debug
+            imageFromInuptToCanvas();
+        }
+    });
+});
 
 
 
@@ -167,22 +232,6 @@ textinput.addEventListener('click', browseClick);
 
 let image_data_url = ""
 // Render Image on Canvas
-function imageFromInuptToCanvas() {
-    const ctx = canvas.getContext('2d', { alpha: false });
-    var file = document.getElementById('get-photo').files[0];
-    var reader = new FileReader();
-    
-    reader.onload = function(e) {
-        var image = new Image();
-        image.onload = () => {
-            setupCanvas(image);
-            showEditInterface();
-        };
-        image.src = reader.result;
-    }
-    reader.readAsDataURL(file);
-}
-
 function setupCanvas(image) {
     const naturalWidth = image.naturalWidth;
     const naturalHeight = image.naturalHeight;
@@ -263,9 +312,13 @@ function createBtnAnnuler(){
   divBtnCanvas.appendChild(btnAnnuler)  // Changed from append to appendChild
 }
 
-function createBtnCanvas(){
-  createBtnEnregistrer()
-  createBtnAnnuler()
+function createBtnCanvas() {
+    // Nettoyer les boutons existants d'abord
+    divBtnCanvas.innerHTML = '';
+    
+    // Créer les nouveaux boutons
+    createBtnEnregistrer();
+    createBtnAnnuler();
 }
 
 function removeBtnCanvas(){
@@ -307,8 +360,6 @@ render()
 
 // APPRENTISSAGE AVEC CLAUDE POUR TOOL CARRÉ, FLÈCHE...
 
-
-const ctx = canvas.getContext('2d');
 const rect = canvas.getBoundingClientRect();
 
 let startX, startY, endX, endY;
@@ -322,11 +373,9 @@ let rectangleInfo = {
 
 let isDrawing = false;
 
-// État global pour suivre quelle forme on dessine
-let currentShape = 'rectangle'; // ou 'arrow'
-
-let currentColor = '#000000'; // Couleur par défaut : noir
-
+// Variables globales
+let currentShape = null;
+let selectedShape = null;
 let shapes = [];
 
 // Structure d'une forme
@@ -341,74 +390,32 @@ class Shape {
     }
 }
 
-function setColor(color) {
+// Variables globales supplémentaires
+let currentColor = '#FF0000'; // Couleur par défaut
+let angleInfo = {
+    points: [],
+    isSelected: false
+};
+
+// Fonction pour définir la couleur
+window.setColor = function(color) {
     currentColor = color;
-    ctx.strokeStyle = color;
-}
+};
 
-// Fonction pour changer de forme
-function setShape(shape) {
-  // Fonctionnalité existante
-  currentShape = shape;
-  isDrawing = false;
-  rectangleInfo.points = [];
-  rectangleInfo.isSelected = false;
-  rectangleInfo.selectedHandle = -1;
-  
-  // Ajout de la gestion visuelle des boutons
-  document.querySelectorAll('.tool-button').forEach(btn => {
-      btn.classList.remove('active');
-  });
-  
-  const selectedButton = document.querySelector(`.tool-button[onclick*="${shape}"]`);
-  if (selectedButton) {
-      selectedButton.classList.add('active');
-  }
-  
-  // Effacer et redessiner le canvas
-  redrawCanvas();
-}
-
-function isPointInHandle(mouseX, mouseY, handleX, handleY, handleSize = 6) {
-    // On calcule la distance entre le point de la souris et le centre de la poignée
-    const distance = Math.sqrt(
-        Math.pow(mouseX - handleX, 2) + 
-        Math.pow(mouseY - handleY, 2)
-    );
+// Fonction pour dessiner un rectangle
+function drawRectangle(points, isSelected = false) {
+    if (!points || points.length !== 4) return;
     
-    // Si la distance est inférieure à la taille de la poignée, la souris est dessus
-    return distance <= handleSize;
-}
-
-function getSelectedHandle(mouseX, mouseY) {
-    for(let i = 0; i < rectangleInfo.points.length; i++) {
-        const point = rectangleInfo.points[i];
-        if(isPointInHandle(mouseX, mouseY, point.x, point.y)) {
-            return i; // Retourne l'index du coin sélectionné
-        }
-    }
-    return -1; // Aucun coin sélectionné
-}
-
-// Fonction pour dessiner les poignées
-function drawHandles() {
-    ctx.fillStyle = 'blue';
-    rectangleInfo.points.forEach(point => {
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-    });
-}
-
-// Fonction pour dessiner le rectangle
-function drawRectangle(points, isSelected) {
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
-    points.forEach(point => {
-        ctx.lineTo(point.x, point.y);
-    });
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
     ctx.closePath();
+    
+    // Style du rectangle
     ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     // Dessiner les poignées si sélectionné
@@ -419,33 +426,210 @@ function drawRectangle(points, isSelected) {
     }
 }
 
-function drawArrow(startX, startY, endX, endY, isSelected) {
-    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
-    // Corps de la flèche
+// Fonction pour dessiner une poignée
+function drawHandle(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#FF0000';
+    ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+// Fonction pour dessiner une flèche
+function drawArrow(startX, startY, endX, endY, isSelected = false) {
+    const headLength = 20; // Longueur de la pointe de la flèche
+    const angle = Math.atan2(endY - startY, endX - startX);
+    
+    // Ligne principale
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
+    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
+    ctx.lineWidth = 2;
     ctx.stroke();
-
-    // Calcul de l'angle de la pointe
-    const angle = Math.atan2(endY - startY, endX - startX);
     
-    // Dessin de la pointe
+    // Pointe de la flèche
     ctx.beginPath();
     ctx.moveTo(endX, endY);
-    ctx.lineTo(
-        endX - 15 * Math.cos(angle - Math.PI/6),
-        endY - 15 * Math.sin(angle - Math.PI/6)
-    );
-    ctx.lineTo(
-        endX - 15 * Math.cos(angle + Math.PI/6),
-        endY - 15 * Math.sin(angle + Math.PI/6)
-    );
-    ctx.closePath();
-    ctx.fillStyle = 'black';
-    ctx.fill();
+    ctx.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6),
+               endY - headLength * Math.sin(angle - Math.PI / 6));
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6),
+               endY - headLength * Math.sin(angle + Math.PI / 6));
+    ctx.stroke();
 }
 
+// Fonction pour redessiner le canvas
+function redrawCanvas() {
+    if (!ctx) return;
+    
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Redessiner l'image de fond si elle existe
+    if (image_data_url) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Redessiner toutes les formes
+            shapes.forEach(shape => {
+                if (shape.type === 'rectangle') {
+                    drawRectangle(shape.points, shape.isSelected);
+                } else if (shape.type === 'arrow') {
+                    drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, shape.isSelected);
+                } else if (shape.type === 'angle') {
+                    drawAngle(shape.points, shape.isSelected);
+                }
+            });
+        };
+        img.src = image_data_url;
+    }
+}
+
+// Fonction pour dessiner un angle
+function drawAngle(points, isSelected = false) {
+    if (!points || points.length !== 3) return;
+    
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    ctx.lineTo(points[2].x, points[2].y);
+    ctx.lineTo(points[1].x, points[1].y);
+    
+    ctx.strokeStyle = isSelected ? '#FF0000' : currentColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    if (isSelected) {
+        points.forEach(point => {
+            drawHandle(point.x, point.y);
+        });
+    }
+}
+
+// Fonction pour sélectionner l'outil
+window.setShape = function(shape) {
+    // Réinitialiser l'état précédent
+    currentShape = shape;
+    isDrawing = false;
+    rectangleInfo.points = [];
+    rectangleInfo.isSelected = false;
+    rectangleInfo.selectedHandle = -1;
+    
+    // Gestion visuelle des boutons
+    document.querySelectorAll('.tool-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const selectedButton = document.querySelector(`.tool-button[onclick*="${shape}"]`);
+    if (selectedButton) {
+        selectedButton.classList.add('active');
+    }
+    
+    // Réinitialiser le canvas si nécessaire
+    redrawCanvas();
+};
+
+// Modifier la fonction cancelEdit
+window.cancelEdit = function() {
+    // Réinitialiser les variables
+    currentShape = null;
+    selectedShape = null;
+    shapes = [];
+    isDrawing = false;
+    image_data_url = null;
+    
+    // Masquer l'éditeur complet
+    const editorContainer = document.querySelector('.editor-container');
+    if (editorContainer) {
+        editorContainer.style.display = 'none';
+        editorContainer.classList.remove('active');
+    }
+    
+    // Réinitialiser le canvas
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.style.display = 'none';
+    }
+    
+    // Réinitialiser l'input file
+    const fileInput = document.getElementById('get-photo');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // Réafficher l'interface principale
+    const toolElement = document.querySelector('.tool');
+    if (toolElement) {
+        toolElement.style.display = 'block';
+        toolElement.classList.remove('hidden');
+    }
+    
+    // Masquer la toolbar
+    const toolbar = document.querySelector('.toolbar');
+    if (toolbar) {
+        toolbar.style.display = 'none';
+        toolbar.classList.add('hidden');
+    }
+
+    // Masquer le conteneur du canvas
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+        canvasContainer.style.display = 'none';
+    }
+    
+    console.log('Edition annulée et interface réinitialisée'); // Debug
+};
+
+// S'assurer que la fonction est disponible immédiatement
+if (typeof window.cancelEdit === 'undefined') {
+    console.log('Initialisation de cancelEdit'); // Debug
+}
+
+// Modifier le HTML pour utiliser window.setShape et window.deleteSelectedShape
+document.addEventListener('DOMContentLoaded', function() {
+    const toolbar = document.querySelector('.toolbar');
+    
+    // Mettre à jour les onclick des boutons
+    toolbar.innerHTML = `
+        <button class="tool-button" onclick="window.setShape('arrow')">
+            <i class="fas fa-arrow-right"></i>
+            <span>Flèche</span>
+        </button>
+        <button class="tool-button" onclick="window.setShape('rectangle')">
+            <i class="fas fa-square"></i>
+            <span>Surface</span>
+        </button>
+        <button class="tool-button" onclick="window.setShape('angle')">
+            <i class="fas fa-ruler-combined"></i>
+            <span>Angle</span>
+        </button>
+        <button class="tool-button" onclick="window.setShape('text')">
+            <i class="fas fa-font"></i>
+            <span>Texte</span>
+        </button>
+        <button class="tool-button delete-button" onclick="window.deleteSelectedShape()">
+            <i class="fas fa-trash"></i>
+            <span>Supprimer</span>
+        </button>
+        <button class="tool-button back-button" onclick="window.cancelEdit()">
+            <i class="fas fa-times"></i>
+            <span>Annuler</span>
+        </button>
+    `;
+});
+
+// Fonction pour dessiner les poignées
+function drawHandles() {
+    ctx.fillStyle = 'blue';
+    rectangleInfo.points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
 
 function redrawShapes() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -523,7 +707,7 @@ function isPointInShape(x, y, shape) {
     }
 }
 
-let selectedShape = null;
+
 function handleCanvasClick(e) {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -547,7 +731,7 @@ function handleCanvasClick(e) {
   }
 
   // Si on n'a cliqué sur aucune forme et qu'un outil est sélectionné
-  if (!clickedOnShape && currentTool) {
+  if (!clickedOnShape && currentShape) {
       isDrawing = true;
       startDrawing(x, y);
   }
@@ -558,77 +742,7 @@ function handleCanvasClick(e) {
 
 
 function handleMouseDown(e) {
-  const rect = canvas.getBoundingClientRect();
-  startX = e.clientX - rect.left;
-  startY = e.clientY - rect.top;
-
-  // Vérifier d'abord si on clique sur une forme existante
-  let clickedOnShape = false;
-  
-  for (let shape of shapes) {
-      if (isPointInShape(startX, startY, shape)) {
-          if (selectedShape) {
-              selectedShape.isSelected = false;
-          }
-          shape.isSelected = true;
-          selectedShape = shape;
-          clickedOnShape = true;
-          break;
-      }
-  }
-
-  if (!clickedOnShape) {
-      isDrawing = true;
-  }
-
-  redrawCanvas();
-}
-
-
-function redrawCanvas() {
-  const ctx = canvas.getContext('2d');
-  
-  // Effacer le canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Redessiner l'image de fond si elle existe
-  if (image_data_url) {
-      const img = new Image();
-      img.src = image_data_url;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  }
-  
-  // Redessiner toutes les formes
-  shapes.forEach(shape => {
-      drawShape(ctx, shape);
-  });
-}
-
-// Supprimer une forme
-function deleteSelectedShape() {
-  if (selectedShape) {
-      // Trouver l'index de la forme sélectionnée
-      const index = shapes.findIndex(shape => shape === selectedShape);
-      if (index !== -1) {
-          // Supprimer la forme du tableau
-          shapes.splice(index, 1);
-          selectedShape = null;
-          // Redessiner le canvas
-          redrawAllShapes();
-      }
-  }
-}
-
-// Ajouter un écouteur pour la touche "Delete" ou "Backspace"
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Delete' || e.key === 'Backspace') {
-      deleteSelectedShape();
-  }
-});
-
-
-// Gestion du début du dessin
-canvas.addEventListener('mousedown', function(e) {
+    const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
@@ -637,111 +751,104 @@ canvas.addEventListener('mousedown', function(e) {
     
     for (let shape of shapes) {
         if (isPointInShape(mouseX, mouseY, shape)) {
-            if (selectedShape) {
-                selectedShape.isSelected = false;
-            }
-            shape.isSelected = true;
-            selectedShape = shape;
+            updateSelection(shape);
             clickedOnShape = true;
-            redrawAllShapes(); // Nouvelle fonction à créer
             break;
         }
     }
 
     if (!clickedOnShape) {
-        // Votre code existant pour le dessin
-        if(currentShape === 'rectangle') {
-            // ... votre code existant ...
-        } else if(currentShape === 'arrow') {
-            // ... votre code existant ...
+        updateSelection(null);
+        // Logique de dessin
+        if (currentShape) {
+            isDrawing = true;
+            if (currentShape === 'rectangle') {
+                rectangleInfo.points = [
+                    {x: mouseX, y: mouseY}, // top-left
+                    {x: mouseX, y: mouseY}, // top-right
+                    {x: mouseX, y: mouseY}, // bottom-right
+                    {x: mouseX, y: mouseY}  // bottom-left
+                ];
+            } else if (currentShape === 'arrow') {
+                startX = mouseX;
+                startY = mouseY;
+            } else if (currentShape === 'angle') {
+                angleInfo.points = [
+                    {x: mouseX, y: mouseY},
+                    {x: mouseX, y: mouseY},
+                    {x: mouseX, y: mouseY}
+                ];
+            }
         }
     }
-});
+}
 
-
-
-// Gestion du mouvement
-canvas.addEventListener('mousemove', function(e) {
+function handleMouseMove(e) {
     if (!isDrawing) return;
-    
+
+    const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    
-    // Permet d'éviter de dessiner des milliers de fleches
+
+    // Effacer et redessiner l'image
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if(currentShape === 'rectangle') {
-    		if(rectangleInfo.selectedHandle !== -1) {
-        // Modification d'un coin existant
-        rectangleInfo.points[rectangleInfo.selectedHandle] = {x: mouseX, y: mouseY};
-        } else {
-            // Création d'un nouveau rectangle
-            rectangleInfo.points[1].x = mouseX;
-            rectangleInfo.points[2].x = mouseX;
-            rectangleInfo.points[2].y = mouseY;
-            rectangleInfo.points[3].y = mouseY;
-        }
+    redrawCanvas();
 
-        // Redessiner
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawRectangle(rectangleInfo.points, rectangleInfo.isSelected);
-    }else if(currentShape === 'arrow') {
-        endX = mouseX;
-        endY = mouseY;
-        drawArrow(startX, startY, endX, endY, rectangleInfo.isSelected);
+    if (currentShape === 'rectangle') {
+        rectangleInfo.points[1].x = mouseX;
+        rectangleInfo.points[2].x = mouseX;
+        rectangleInfo.points[2].y = mouseY;
+        rectangleInfo.points[3].y = mouseY;
+        drawRectangle(rectangleInfo.points);
+    } else if (currentShape === 'arrow') {
+        drawArrow(startX, startY, mouseX, mouseY);
+    } else if (currentShape === 'angle') {
+        angleInfo.points[1] = {x: mouseX, y: mouseY};
+        drawAngle(angleInfo.points);
     }
-});
+}
 
-// Fin du dessin
-canvas.addEventListener('mouseup', function(e) {
-    if (isDrawing) {
-        const newShape = new Shape(currentShape, currentColor);
-        
+function handleMouseUp(e) {
+    if (!isDrawing) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (currentShape) {
+        const newShape = {
+            type: currentShape,
+            isSelected: false
+        };
+
         if (currentShape === 'rectangle') {
-            // Pour le rectangle, copier les points
             newShape.points = [...rectangleInfo.points];
         } else if (currentShape === 'arrow') {
-            // Pour la flèche, copier les coordonnées
             newShape.startX = startX;
             newShape.startY = startY;
-            newShape.endX = endX;
-            newShape.endY = endY;
+            newShape.endX = mouseX;
+            newShape.endY = mouseY;
+        } else if (currentShape === 'angle') {
+            newShape.points = [...angleInfo.points];
         }
-        
+
         shapes.push(newShape);
     }
-    
-    isDrawing = false;
-    rectangleInfo.selectedHandle = -1;
-});
 
-function redrawAllShapes() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Redessiner toutes les formes
-    shapes.forEach(shape => {
-        if (shape.type === 'rectangle') {
-            drawRectangle(shape.points, shape.isSelected);
-        } else if (shape.type === 'arrow') {
-            drawArrow(shape.startX, shape.startY, shape.endX, shape.endY, shape.isSelected);
-        }
-    });
+    isDrawing = false;
+    redrawCanvas();
+}
+
+// Gestionnaires d'événements pour le dessin
+function initDrawingEvents() {
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
 }
 
 // Ajout des variables pour gérer l'interface
 const toolSelector = document.querySelector('.tool');
 const toolbar = document.querySelector('.toolbar');
-
-function showEditInterface() {
-    // Masquer le sélecteur d'image
-    toolSelector.classList.add('hidden');
-    
-    // Afficher la barre d'outils et le canvas
-    toolbar.classList.remove('hidden');
-    canvas.classList.remove('hidden');
-    
-    // Créer les boutons de contrôle
-    createBtnCanvas();
-}
 
 function hideEditInterface() {
     // Réinitialiser l'interface
@@ -749,6 +856,77 @@ function hideEditInterface() {
     toolbar.classList.add('hidden');
     canvas.classList.add('hidden');
     removeBtnCanvas();
+}
+
+// Gestionnaire pour l'input file
+document.getElementById('get-photo').addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        // Appeler la fonction de traitement d'image
+        imageFromInuptToCanvas();
+        // Afficher l'interface d'édition
+        showEditInterface();
+    }
+});
+
+// Gestionnaire pour le bouton "Nouvelle superficie"
+document.getElementById('takePicture').addEventListener('click', function() {
+    document.getElementById('get-photo').click();
+});
+
+// Mettre à jour la fonction qui gère la sélection des formes
+function updateSelection(shape) {
+    if (selectedShape) {
+        selectedShape.isSelected = false;
+    }
+    
+    selectedShape = shape;
+    if (shape) {
+        shape.isSelected = true;
+    }
+    
+    // Mettre à jour l'état du bouton de suppression
+    const deleteButton = document.querySelector('.delete-button');
+    if (deleteButton) {
+        deleteButton.disabled = !selectedShape;
+    }
+    
+    redrawCanvas();
+}
+
+// Fonction pour supprimer une forme sélectionnée
+window.deleteSelectedShape = function() {
+    console.log('Tentative de suppression...'); // Debug
+    console.log('Forme sélectionnée:', selectedShape); // Debug
+    console.log('Nombre de formes avant:', shapes.length); // Debug
+
+    if (selectedShape) {
+        // Trouver l'index de la forme sélectionnée
+        const index = shapes.findIndex(shape => shape === selectedShape);
+        
+        if (index !== -1) {
+            // Supprimer la forme du tableau
+            shapes.splice(index, 1);
+            selectedShape = null;
+            
+            // Redessiner le canvas
+            redrawCanvas();
+            
+            console.log('Forme supprimée. Nombre de formes restantes:', shapes.length); // Debug
+        }
+    } else {
+        console.log('Aucune forme sélectionnée'); // Debug
+    }
+};
+
+// Ajouter un retour visuel pour la suppression
+function showDeleteFeedback() {
+    const deleteButton = document.querySelector('.delete-button');
+    if (deleteButton) {
+        deleteButton.classList.add('delete-feedback');
+        setTimeout(() => {
+            deleteButton.classList.remove('delete-feedback');
+        }, 200);
+    }
 }
 
 
