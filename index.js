@@ -348,25 +348,25 @@ function setColor(color) {
 
 // Fonction pour changer de forme
 function setShape(shape) {
-    // Fonctionnalité existante
-    currentShape = shape;
-    isDrawing = false;
-    rectangleInfo.points = [];
-    rectangleInfo.isSelected = false;
-    rectangleInfo.selectedHandle = -1;
-    
-    // Ajout de la gestion visuelle des boutons
-    document.querySelectorAll('.tool-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const selectedButton = document.querySelector(`.tool-button[onclick*="${shape}"]`);
-    if (selectedButton) {
-        selectedButton.classList.add('active');
-    }
-    
-    // Effacer et redessiner le canvas
-    redrawCanvas();
+  // Fonctionnalité existante
+  currentShape = shape;
+  isDrawing = false;
+  rectangleInfo.points = [];
+  rectangleInfo.isSelected = false;
+  rectangleInfo.selectedHandle = -1;
+  
+  // Ajout de la gestion visuelle des boutons
+  document.querySelectorAll('.tool-button').forEach(btn => {
+      btn.classList.remove('active');
+  });
+  
+  const selectedButton = document.querySelector(`.tool-button[onclick*="${shape}"]`);
+  if (selectedButton) {
+      selectedButton.classList.add('active');
+  }
+  
+  // Effacer et redessiner le canvas
+  redrawCanvas();
 }
 
 function isPointInHandle(mouseX, mouseY, handleX, handleY, handleSize = 6) {
