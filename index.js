@@ -459,12 +459,12 @@ function drawArrow(startX, startY, endX, endY, isSelected = false, context = ctx
 
 // Fonction pour redessiner le canvas
 function redrawCanvas() {
-    if (!ctx || !canvas) return;
+    if (!ctx) return;
     
     // Effacer le canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Redessiner l'image de base
+    // Redessiner l'image de fond si elle existe
     if (image_data_url) {
         const img = new Image();
         img.onload = function() {
@@ -1033,80 +1033,3 @@ function showDeleteFeedback() {
 
 
 
-// A supprimer
-
-
-// Fonction pour afficher les images sauvegardées dans l'interface principale
-function displaySavedImages() {
-    const imagesRef = ref(database, 'images');
-    get(imagesRef).then((snapshot) => {
-        if (snapshot.exists()) {
-            const savedImagesContainer = document.createElement('div');
-            savedImagesContainer.className = 'saved-images-container';
-            
-            snapshot.forEach((childSnapshot) => {
-                const imageData = childSnapshot.val();
-                const imageId = childSnapshot.key;
-                
-                const imageCard = document.createElement('div');
-                imageCard.className = 'image-card';
-                imageCard.innerHTML = `
-                    <img src="${imageData.imageUrl}" alt="Image sauvegardée">
-                    <div class="image-card-overlay">
-                        <button onclick="window.loadSavedImage('${imageId}')">
-                            <i class="fas fa-edit"></i> Modifier
-                        </button>
-                    </div>
-                `;
-                
-                savedImagesContainer.appendChild(imageCard);
-            });
-            
-            // Ajouter le conteneur après le bouton "Nouvelle superficie"
-            const toolElement = document.querySelector('.tool');
-            toolElement.appendChild(savedImagesContainer);
-        }
-    });
-}
-
-// Fonction pour charger une image sauvegardée
-window.loadSavedImage = async function(imageId) {
-    try {
-        const snapshot = await get(ref(database, `images/${imageId}`));
-        if (snapshot.exists()) {
-            const savedData = snapshot.val();
-            
-            // Charger l'image
-            const img = new Image();
-            img.onload = function() {
-                // Configurer le canvas avec l'image
-                setupCanvas(img);
-                
-                // Restaurer les formes sauvegardées
-                shapes = savedData.shapes.map(shape => ({
-                    ...shape,
-                    isSelected: false // Réinitialiser la sélection
-                }));
-                
-                // Afficher l'interface d'édition
-                showEditInterface();
-                
-                // Redessiner le canvas avec l'image et les formes
-                redrawCanvas();
-                
-                console.log('Image chargée avec', shapes.length, 'formes');
-            };
-            img.src = savedData.imageUrl;
-            image_data_url = savedData.imageUrl;
-        }
-    } catch (error) {
-        console.error('Erreur lors du chargement:', error);
-    }
-};
-
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    displaySavedImages();
-});
