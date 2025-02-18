@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "fabric": "^6.6.1",
     "firebase": "^11.1.0",
     "uuid": "^11.0.4"
   }

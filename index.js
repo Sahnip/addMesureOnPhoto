@@ -6,6 +6,7 @@ import { getDatabase, ref, onValue, set, push, get, child, update, remove } from
 
 import { StaticCanvas, FabricText } from 'fabric'
 
+
 const fileInput = document.getElementById("get-photo");  // use input file id here
 const textinput = document.getElementById("takePicture"); //Change the browser title
 const canvas = document.querySelector("#canvas");
@@ -15,6 +16,11 @@ let btnEnregistrer = ""
 let btnAnnuler = ""
 
 let newPic = ''
+
+/*
+import { StaticCanvas } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/canvas/StaticCanvas.d.ts'
+import { FabricText } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/shapes/Text/Text.d.ts'
+*/
 
 
 
