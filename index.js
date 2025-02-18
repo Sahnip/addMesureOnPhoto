@@ -4,6 +4,7 @@ import { getDatabase, ref, onValue, set, push, get, child, update, remove } from
 
 //import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
+import { StaticCanvas, FabricText } from 'fabric'
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
 const textinput = document.getElementById("takePicture"); //Change the browser title
@@ -1033,3 +1034,8 @@ function showDeleteFeedback() {
 
 
 
+
+const canvas3 = new StaticCanvas();
+const helloWorld = new FabricText('Hello world!');
+canvas3.add(helloWorld);
+canvas3.centerObject(helloWorld);
