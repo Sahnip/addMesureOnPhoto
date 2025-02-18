@@ -4,7 +4,7 @@ import { getDatabase, ref, onValue, set, push, get, child, update, remove } from
 
 //import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
-import { StaticCanvas, FabricText } from 'fabric'
+
 
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
@@ -17,10 +17,10 @@ let btnAnnuler = ""
 
 let newPic = ''
 
-/*
-import { StaticCanvas } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/canvas/StaticCanvas.d.ts'
-import { FabricText } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/shapes/Text/Text.d.ts'
-*/
+
+import { StaticCanvas } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/canvas/StaticCanvas.mjs'
+import { FabricText } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/shapes/Text/Text.mjs'
+
 
 
 
