@@ -4,7 +4,8 @@ import { getDatabase, ref, onValue, set, push, get, child, update, remove } from
 
 //import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
-
+// Div wrapper canvas
+const canvasContainer = document.querySelector("#canvas-container")
 
 
 const fileInput = document.getElementById("get-photo");  // use input file id here
@@ -21,7 +22,11 @@ let newPic = ''
 import { StaticCanvas } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/canvas/StaticCanvas.mjs'
 import { FabricText } from 'https://cdn.jsdelivr.net/npm/fabric@6.6.1/dist/src/shapes/Text/Text.mjs'
 
-
+const canvas3 = new StaticCanvas();
+const helloWorld = new FabricText('Hello world!');
+canvas3.add(helloWorld);
+canvas3.centerObject(helloWorld);
+canvasContainer.appendChild(canvas3.getElement());
 
 
 const previousDiag = document.querySelector('.previous-diag')
@@ -1041,7 +1046,4 @@ function showDeleteFeedback() {
 
 
 
-const canvas3 = new StaticCanvas();
-const helloWorld = new FabricText('Hello world!');
-canvas3.add(helloWorld);
-canvas3.centerObject(helloWorld);
+
