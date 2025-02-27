@@ -243,7 +243,7 @@ textinput.addEventListener('click', browseClick);
 
 
 let image_data_url = ""
-// Render Image on Canvas
+// Render Image on Canva
 function setupCanvas(image) {
     const naturalWidth = image.naturalWidth;
     const naturalHeight = image.naturalHeight;
