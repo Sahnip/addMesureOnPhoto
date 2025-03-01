@@ -31,7 +31,7 @@ canvasContainer.appendChild(canvas3.getElement());
 
 const previousDiag = document.querySelector('.previous-diag')
 
-//e.target.files[0]
+
 const firebaseConfig = {
     apiKey: "AIzaSyBghv1dDk0BBu1FaT6dFdEIu6VLD6Df9gI",
     authDomain: "diagarea.firebaseapp.com",
@@ -47,22 +47,6 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app)
 
 const dbRef = ref(database, 'diagsImage');
-
-
-/*
-
-constante newId = 0
-Je suis dans la fonction de rechercher un élément complet dans la bdd
-if newId != oldId
-newId = oldId + 1
-
-
-const newID = 0
-if(newID = )
-
-*/
-
-// Je veux récupérer le dernier id de la database
 
 
 
