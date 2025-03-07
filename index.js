@@ -80,7 +80,7 @@ window.addEventListener('dblclick', function(e){
       })
   })
 })
-// removeFirebase(e)
+
   
   // AJOUTER LES ELEMENTS DANS LA BDD
   function addFirebase(userId, name, imageUrl) {
