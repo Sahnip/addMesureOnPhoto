@@ -15,11 +15,9 @@ let newPic = ''
 //const getPhoto = document.getElementById('get-photo').files[0]
 
 const previousDiag = document.querySelector('.previous-diag')
-// import { initializeApp } from './node_modules/firebase/app';
-// import { getDatabase, onValue, ref, set } from './node_modules/firebase/database';
 
 
-//e.target.files[0]
+
 const firebaseConfig = {
     apiKey: "AIzaSyBghv1dDk0BBu1FaT6dFdEIu6VLD6Df9gI",
     authDomain: "diagarea.firebaseapp.com",
@@ -377,116 +375,3 @@ render()
 
 
 
-
-
-/*
-
-
-// ANCIEN FILE INPUT EVENT LISTENER DANS INDEX.HTML
-
-// Récupérer le premier fichier
-                const file = files[0];
-                console.log(file)
-                canvas.getContext('2d')//.drawImage(imageS, 0, 0, canvas.width, canvas.height);
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const img = new Image();
-                    //img.src = event.target.result;
-                    //console.log(reader.result)
-                    img.onload = () => {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        //ctx.drawImage(img, 0, 0, img.width, img.height);
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        console.log(ctx)
-                        image_data_url = canvas.toDataURL('image/jpeg');
-                        console.log(image_data_url)
-                    };
-                    img.src = reader.result;
-                };
-                reader.readAsDataURL(file);
-                //console.log(reader)
-
-
-
-
-
-
-
-
-
-
-// Function Prendre Photo bouton, avec stream caméra (OLD VERSION)
-
-
-takePicture.addEventListener('click', function(){
-    //getUnsplashImage()
-    if (!stream) {
-        // Ouvrir la caméra
-        navigator.mediaDevices.getUserMedia(constraints)
-        .then((videoStream) => {
-            stream = videoStream; // Sauvegarder la référence du stream
-            video2.srcObject = stream;
-            video2.classList.remove('camera-hidden')
-            video2.classList.add('camera-fullscreen')
-            video2.play();
-            closeCameraBtn.classList.remove('camera-hidden') // Retirer hidden quand fullscreen
-            closeCameraBtn.classList.add('btn-tools-camera')
-            closeCameraBtn.style.cursor = "pointer"
-            takePicture.textContent = 'Prendre une photo';
-            // takePicture.style.cursor = "pointer"
-        })
-        .catch((error) => {
-            console.error("Erreur d'accès à la caméra:", error);
-        });
-    } else {
-        // Fermer la caméra
-        closeCanvasBtn.classList.remove('btn-tools-camera')
-        closeCanvasBtn.classList.add('camera-hidden') // Retirer hidden quand fullscreen
-        canvas.classList.remove('camera-fullscreen')
-        canvas.classList.add('camera-hidden') 
-        canvas.classList.remove('camera-hidden') // Retirer hidden quand fullscreen
-        canvas.classList.add('camera-fullscreen')
-        closeCanvasBtn.classList.remove('camera-hidden') // Retirer hidden quand fullscreen
-        closeCanvasBtn.classList.add('btn-tools-camera')
-        closeCanvasBtn.style.cursor = "pointer"
-        console.log(canvas.classList)
-        canvas.getContext('2d').drawImage(video2, 0, 0, canvas.width, canvas.height);
-        let image_data_url = canvas.toDataURL('image/jpeg');
-        video2.classList.add('camera-hidden')
-        closeCameraBtn.classList.add('camera-hidden') // Remettre hidden par défaut
-        closeCameraBtn.classList.remove('btn-tools-camera')
-        stream.getTracks().forEach(track => track.stop());
-        video2.srcObject = null;
-        stream = null;
-        video2.style.display = 'none'
-        takePicture.innerHTML = `<i class="fa-solid fa-plus"></i> Nouvelle superficie`;
-        console.log(image_data_url);
-    }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const addData = document.getElementById("addData")
-// addData.addEventListener('click', function(){
-//     addFirebase(userId, nameTest, mailTest, newPic)
-
-// })
-// addFirebase(userId, nameTest, mailTest, newPic)
-
-
-*/
